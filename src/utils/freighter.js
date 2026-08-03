@@ -1,15 +1,13 @@
 import {
   isConnected,
-  getPublicKey,
-  signTransaction,
   requestAccess,
-  getNetwork,
+  signTransaction,
 } from "@stellar/freighter-api";
 
 export const checkFreighterInstalled = async () => {
   try {
-    const connected = await isConnected();
-    return connected && connected.isConnected;
+    const result = await isConnected();
+    return !!result.isConnected;
   } catch {
     return false;
   }
@@ -17,43 +15,29 @@ export const checkFreighterInstalled = async () => {
 
 export const connectFreighter = async () => {
   const installed = await checkFreighterInstalled();
-  if (!installed) {
-    throw new Error("FREIGHTER_NOT_INSTALLED");
-  }
-  try {
-    await requestAccess();
-    const result = await getPublicKey();
-    const pubKey = result.publicKey || result;
-    if (!pubKey) throw new Error("NO_PUBLIC_KEY");
-    return pubKey;
-  } catch (err) {
-    if (err.message === "FREIGHTER_NOT_INSTALLED") throw err;
-    if (err.message && err.message.includes("User declined")) {
+  if (!installed) throw new Error("FREIGHTER_NOT_INSTALLED");
+
+  const accessResult = await requestAccess();
+  if (accessResult.error) {
+    const msg = accessResult.error.message || "";
+    if (msg.toLowerCase().includes("reject") || msg.toLowerCase().includes("denied")) {
       throw new Error("USER_DECLINED");
     }
     throw new Error("CONNECTION_FAILED");
   }
+  const address = accessResult.address;
+  if (!address) throw new Error("CONNECTION_FAILED");
+  return address;
 };
 
-export const getFreighterNetwork = async () => {
-  try {
-    const net = await getNetwork();
-    return net.network || net;
-  } catch {
-    return null;
-  }
-};
-
-export const signWithFreighter = async (xdr, networkPassphrase) => {
-  try {
-    const result = await signTransaction(xdr, {
-      networkPassphrase,
-    });
-    return result.signedTxXdr || result;
-  } catch (err) {
-    if (err.message && err.message.includes("User declined")) {
+export const signWithFreighter = async (xdr, _networkPassphrase) => {
+  const result = await signTransaction(xdr, { network: "TESTNET" });
+  if (result.error) {
+    const msg = result.error.message || "";
+    if (msg.toLowerCase().includes("reject") || msg.toLowerCase().includes("denied")) {
       throw new Error("USER_DECLINED_SIGN");
     }
     throw new Error("SIGN_FAILED");
   }
+  return result.signedTxXdr;
 };

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { connectFreighter, checkFreighterInstalled, getFreighterNetwork } from "../utils/freighter";
+import { connectFreighter, checkFreighterInstalled } from "../utils/freighter";
 import { fetchXLMBalance } from "../utils/stellar";
 
 const WalletContext = createContext(null);
@@ -10,7 +10,6 @@ export const WalletProvider = ({ children }) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [walletError, setWalletError] = useState(null);
-  const [network, setNetwork] = useState(null);
   const [freighterInstalled, setFreighterInstalled] = useState(null);
 
   useEffect(() => {
@@ -25,9 +24,7 @@ export const WalletProvider = ({ children }) => {
       const bal = await fetchXLMBalance(pk);
       setBalance(bal);
     } catch (err) {
-      if (err.message === "ACCOUNT_NOT_FOUND") {
-        setBalance("0");
-      }
+      if (err.message === "ACCOUNT_NOT_FOUND") setBalance("0");
     } finally {
       setIsLoadingBalance(false);
     }
@@ -39,8 +36,6 @@ export const WalletProvider = ({ children }) => {
     try {
       const pk = await connectFreighter();
       setPublicKey(pk);
-      const net = await getFreighterNetwork();
-      setNetwork(net);
       await refreshBalance(pk);
     } catch (err) {
       setWalletError(err.message);
@@ -52,14 +47,13 @@ export const WalletProvider = ({ children }) => {
   const disconnect = useCallback(() => {
     setPublicKey(null);
     setBalance(null);
-    setNetwork(null);
     setWalletError(null);
   }, []);
 
   return (
     <WalletContext.Provider value={{
       publicKey, balance, isConnecting, isLoadingBalance,
-      walletError, network, freighterInstalled,
+      walletError, freighterInstalled,
       connect, disconnect, refreshBalance,
     }}>
       {children}
