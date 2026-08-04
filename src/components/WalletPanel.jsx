@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useWallet } from "../context/WalletContext";
-import { formatXLM, getExplorerUrl, fundTestnetAccount } from "../utils/stellar";
+import { formatXLM, fundTestnetAccount } from "../utils/stellar";
 
 export default function WalletPanel() {
   const { publicKey, balance, isLoadingBalance, refreshBalance } = useWallet();
@@ -15,9 +15,9 @@ export default function WalletPanel() {
     try {
       await fundTestnetAccount(publicKey);
       await refreshBalance();
-      setFundMsg({ type: "success", text: "10,000 XLM test tokens added to your wallet!" });
+      setFundMsg({ type: "success", text: "10,000 XLM test tokens added to your wallet." });
     } catch {
-      setFundMsg({ type: "error", text: "Friendbot funding failed. Your account may already be funded." });
+      setFundMsg({ type: "error", text: "Funding failed. Your account may already be funded." });
     } finally {
       setFunding(false);
     }
@@ -26,7 +26,7 @@ export default function WalletPanel() {
   return (
     <section className="wallet-panel" id="donate">
       <div className="wp-inner">
-        <h2 className="section-title">Your Wallet</h2>
+        <h2 className="wp-title">Your Wallet</h2>
         <div className="wp-card">
           <div className="wp-row">
             <span className="wp-label">Address</span>
@@ -36,7 +36,7 @@ export default function WalletPanel() {
               rel="noreferrer"
               className="wp-addr"
             >
-              {publicKey.slice(0, 14)}...{publicKey.slice(-8)} ↗
+              {publicKey.slice(0, 14)}...{publicKey.slice(-8)}
             </a>
           </div>
           <div className="wp-row">
@@ -47,17 +47,15 @@ export default function WalletPanel() {
           </div>
           <div className="wp-actions">
             <button className="btn-ghost-sm" onClick={() => refreshBalance()} disabled={isLoadingBalance}>
-              ↻ Refresh
+              Refresh
             </button>
             <button className="btn-ghost-sm" onClick={handleFund} disabled={funding}>
-              {funding ? <><span className="spinner-sm" /> Funding…</> : "🚰 Get Test XLM"}
+              {funding ? <><span className="spinner-sm" /> Funding</> : "Get Test XLM"}
             </button>
           </div>
-          {fundMsg && (
-            <div className={`fund-msg ${fundMsg.type}`}>{fundMsg.text}</div>
-          )}
+          {fundMsg && <div className={`fund-msg ${fundMsg.type}`}>{fundMsg.text}</div>}
           <p className="wp-note">
-            Need test XLM? Click "Get Test XLM" to receive 10,000 XLM from the Stellar Friendbot.
+            Need test XLM? Click Get Test XLM to receive 10,000 XLM from the Stellar Friendbot.
           </p>
         </div>
       </div>

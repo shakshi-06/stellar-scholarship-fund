@@ -10,14 +10,12 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <div className="navbar-brand">
-          <div className="brand-icon">🎓</div>
           <span className="brand-name">ScholarChain</span>
           <span className="brand-badge">Testnet</span>
         </div>
 
         <div className="navbar-links desktop-only">
           <a href="#scholarships">Scholarships</a>
-          <a href="#donate">Donate</a>
           <a href="#how">How It Works</a>
         </div>
 
@@ -29,13 +27,7 @@ export default function Navbar() {
               disabled={isConnecting || freighterInstalled === false}
               title={freighterInstalled === false ? "Install Freighter wallet first" : ""}
             >
-              {isConnecting ? (
-                <span className="spinner-sm" />
-              ) : freighterInstalled === false ? (
-                "Install Freighter"
-              ) : (
-                "Connect Wallet"
-              )}
+              {isConnecting ? <><span className="spinner-sm" /> Connecting</> : "Connect Wallet"}
             </button>
           ) : (
             <div className="wallet-pill">
@@ -45,7 +37,7 @@ export default function Navbar() {
                   {isLoadingBalance ? "..." : `${formatXLM(balance)} XLM`}
                 </span>
               </div>
-              <button className="btn-disconnect" onClick={disconnect} title="Disconnect">✕</button>
+              <button className="btn-disconnect" onClick={disconnect} title="Disconnect">x</button>
             </div>
           )}
         </div>
@@ -58,7 +50,6 @@ export default function Navbar() {
       {menuOpen && (
         <div className="mobile-menu">
           <a href="#scholarships" onClick={() => setMenuOpen(false)}>Scholarships</a>
-          <a href="#donate" onClick={() => setMenuOpen(false)}>Donate</a>
           <a href="#how" onClick={() => setMenuOpen(false)}>How It Works</a>
           {!publicKey ? (
             <button className="btn-connect" onClick={() => { connect(); setMenuOpen(false); }} disabled={isConnecting}>
@@ -77,10 +68,10 @@ export default function Navbar() {
       {walletError && (
         <div className="navbar-error">
           {walletError === "FREIGHTER_NOT_INSTALLED" && (
-            <>Freighter not found. <a href="https://www.freighter.app" target="_blank" rel="noreferrer">Install it here →</a></>
+            <>Freighter not found. <a href="https://www.freighter.app" target="_blank" rel="noreferrer">Install it here</a></>
           )}
           {walletError === "USER_DECLINED" && "Connection cancelled."}
-          {walletError === "CONNECTION_FAILED" && "Could not connect. Try again."}
+          {walletError === "CONNECTION_FAILED" && "Could not connect. Please try again."}
         </div>
       )}
     </nav>

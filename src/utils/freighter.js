@@ -30,8 +30,11 @@ export const connectFreighter = async () => {
   return address;
 };
 
-export const signWithFreighter = async (xdr, _networkPassphrase) => {
-  const result = await signTransaction(xdr, { network: "TESTNET" });
+export const signWithFreighter = async (xdr, publicKey) => {
+  const result = await signTransaction(xdr, {
+    networkPassphrase: "Test SDF Network ; September 2015",
+    address: publicKey,
+  });
   if (result.error) {
     const msg = result.error.message || "";
     if (msg.toLowerCase().includes("reject") || msg.toLowerCase().includes("denied")) {
@@ -39,5 +42,6 @@ export const signWithFreighter = async (xdr, _networkPassphrase) => {
     }
     throw new Error("SIGN_FAILED");
   }
+  if (!result.signedTxXdr) throw new Error("SIGN_FAILED");
   return result.signedTxXdr;
 };

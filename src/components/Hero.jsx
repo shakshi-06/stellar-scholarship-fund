@@ -1,59 +1,51 @@
 import { useWallet } from "../context/WalletContext";
 
-const STATS = [
-  { value: "₹2.4L+", label: "Disbursed on-chain" },
-  { value: "38", label: "Students funded" },
-  { value: "100%", label: "Transparent" },
-];
-
 export default function Hero() {
   const { publicKey, connect, isConnecting } = useWallet();
 
   return (
     <section className="hero">
-      <div className="hero-bg-dots" aria-hidden="true" />
-      <div className="hero-content">
-        <div className="hero-eyebrow">Built on Stellar Testnet</div>
+      <div className="hero-inner">
+        <div className="hero-label">
+          <span className="hero-dot" />
+          Live on Stellar Testnet
+        </div>
+
         <h1 className="hero-headline">
-          Education that <br />
-          <span className="hero-accent">no one can take away.</span>
+          Education that <em>no one</em><br />can take away.
         </h1>
+
         <p className="hero-sub">
-          ScholarChain puts scholarship funds on-chain — every rupee donated is
-          tracked, every student paid directly, no middlemen.
+          ScholarChain puts scholarship funds directly on-chain. Every donation
+          is tracked on the Stellar ledger and paid straight to the student
+          wallet. No middlemen, no paperwork.
         </p>
+
         <div className="hero-cta">
-          {!publicKey && (
-            <button className="btn-primary" onClick={connect} disabled={isConnecting}>
-              {isConnecting ? <><span className="spinner-sm" /> Connecting...</> : "Connect & Donate"}
+          {!publicKey ? (
+            <button className="btn-peach" onClick={connect} disabled={isConnecting}>
+              {isConnecting ? <><span className="spinner-sm" /> Connecting</> : "Connect Wallet"}
             </button>
+          ) : (
+            <a href="#scholarships" className="btn-peach">Browse Scholarships</a>
           )}
-          <a href="#scholarships" className="btn-ghost">Browse Scholarships ↓</a>
+          <a href="#how" className="btn-outline-white">How It Works</a>
         </div>
+
         <div className="hero-stats">
-          {STATS.map((s) => (
-            <div key={s.label} className="hero-stat">
-              <span className="stat-value">{s.value}</span>
-              <span className="stat-label">{s.label}</span>
-            </div>
-          ))}
+          <div className="stat-item">
+            <span className="stat-num">38</span>
+            <span className="stat-lbl">Students Funded</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-num">6</span>
+            <span className="stat-lbl">Active Funds</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-num">100%</span>
+            <span className="stat-lbl">On-Chain</span>
+          </div>
         </div>
-      </div>
-      <div className="hero-illustration" aria-hidden="true">
-        <div className="float-card fc1">
-          <span>✅</span>
-          <span>Tx confirmed</span>
-        </div>
-        <div className="float-card fc2">
-          <span>🎓</span>
-          <span>Priya funded</span>
-        </div>
-        <div className="float-card fc3">
-          <span>⛓️</span>
-          <span>On Stellar</span>
-        </div>
-        <div className="orb orb1" />
-        <div className="orb orb2" />
       </div>
     </section>
   );
