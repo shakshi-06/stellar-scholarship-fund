@@ -18,13 +18,17 @@ export const connectFreighter = async () => {
   if (!installed) throw new Error("FREIGHTER_NOT_INSTALLED");
 
   const accessResult = await requestAccess();
+
+  if (!accessResult) throw new Error("CONNECTION_FAILED");
+
   if (accessResult.error) {
-    const msg = accessResult.error.message || "";
-    if (msg.toLowerCase().includes("reject") || msg.toLowerCase().includes("denied")) {
+    const msg = (accessResult.error.message || "").toLowerCase();
+    if (msg.includes("declin") || msg.includes("reject") || msg.includes("denied")) {
       throw new Error("USER_DECLINED");
     }
     throw new Error("CONNECTION_FAILED");
   }
+
   const address = accessResult.address;
   if (!address) throw new Error("CONNECTION_FAILED");
   return address;
@@ -35,13 +39,17 @@ export const signWithFreighter = async (xdr, publicKey) => {
     networkPassphrase: "Test SDF Network ; September 2015",
     address: publicKey,
   });
+
+  if (!result) throw new Error("SIGN_FAILED");
+
   if (result.error) {
-    const msg = result.error.message || "";
-    if (msg.toLowerCase().includes("reject") || msg.toLowerCase().includes("denied")) {
+    const msg = (result.error.message || "").toLowerCase();
+    if (msg.includes("declin") || msg.includes("reject") || msg.includes("denied")) {
       throw new Error("USER_DECLINED_SIGN");
     }
     throw new Error("SIGN_FAILED");
   }
+
   if (!result.signedTxXdr) throw new Error("SIGN_FAILED");
   return result.signedTxXdr;
 };
