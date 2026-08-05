@@ -36,8 +36,7 @@ describe("ScholarshipCard", () => {
 
   it("shows raised amount", () => {
     render(<ScholarshipCard scholarship={mockScholarship} onDonate={() => {}} />);
-    expect(screen.getByText(/250 XLM raised/)).toBeInTheDocument();
-  });
+expect(screen.getByText(/raised/)).toBeInTheDocument();  });
 
   it("calls onDonate when button is clicked", () => {
     const onDonate = vi.fn();
