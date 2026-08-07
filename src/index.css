@@ -602,3 +602,72 @@ main { flex: 1; }
   .spinner, .spinner-sm { animation: none; }
   .scard { transition: none; }
 }
+
+/* ── ACTIVITY FEED ───────────────────────────────────── */
+.activity-feed {
+  padding: 72px 0;
+  border-top: 1px solid var(--rule);
+  background: var(--white);
+}
+.af-header {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; margin-bottom: 28px;
+  flex-wrap: wrap; gap: 16px;
+}
+.af-status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.78rem; font-weight: 700;
+  padding: 6px 14px; border-radius: 40px;
+  border: 1.5px solid var(--rule);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.af-status--live { border-color: #3DDC84; color: #1a7a46; background: #e8f9f0; }
+.af-status--connecting { border-color: var(--yellow); color: #7a6000; background: var(--yellow-light); }
+.af-status--error { border-color: #fca5a5; color: #991b1b; background: #fee2e2; }
+.af-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor; flex-shrink: 0;
+}
+.af-feed {
+  border: 1.5px solid var(--rule);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.af-empty {
+  padding: 32px 24px;
+  font-size: 0.85rem; color: var(--muted);
+  display: flex; align-items: center; gap: 10px;
+}
+.af-event {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px; gap: 16px;
+  border-bottom: 1px solid var(--rule);
+  transition: background 0.15s;
+}
+.af-event:last-child { border-bottom: none; }
+.af-event:hover { background: var(--card-warm); }
+.af-event-left { display: flex; align-items: center; gap: 14px; }
+.af-icon {
+  width: 40px; height: 40px; border-radius: var(--radius);
+  background: var(--peach-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 800; color: var(--peach-dark);
+  letter-spacing: 0.04em; flex-shrink: 0;
+}
+.af-event-title { font-size: 0.875rem; color: var(--ink); }
+.af-event-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+.af-hash { color: var(--peach-dark); font-family: monospace; }
+.af-hash:hover { text-decoration: underline; }
+.af-event-time {
+  font-size: 0.75rem; color: var(--muted);
+  white-space: nowrap; flex-shrink: 0;
+}
+.af-note {
+  font-size: 0.75rem; color: var(--muted);
+  margin-top: 14px; line-height: 1.6;
+}
+
+@media (max-width: 480px) {
+  .af-event { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .af-event-time { align-self: flex-end; }
+}

@@ -45,11 +45,14 @@ ScholarChain is a decentralized application that brings scholarship funding on-c
 
 ## Contract Information
 
-| Field | Value |
-|-------|-------|
-| Network | Stellar Testnet |
-| Contract Address | `ADD YOUR DEPLOYED CONTRACT ADDRESS HERE` |
-| Transaction Hash | `ADD A TRANSACTION HASH FROM A CONTRACT INTERACTION HERE` |
+**Network:** Stellar Testnet
+
+- **ScholarshipFund Contract:** `CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD`
+- **ScholarshipRegistry Contract:** `CDEZQ5BPXY7T6BB3X3ZFBXUBSKKEDAHQFN4FSMOWQHJTL5S5CHFIXZ7G`
+- **Deployer Address:** `GBSDMYKZ5XKUYWFPECBE6E2XSCD44UCYEOWXOYFQGWXYRVTIF34AKALD`
+### Deployment Transactions
+- **Registry Contract Deployment:** [9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d](https://stellar.expert/explorer/testnet/tx/9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d)
+- **ScholarshipFund Contract Deployment:** [Your second deployment tx hash here]
 
 Verify on Stellar Explorer:
 - Contract: `https://stellar.expert/explorer/testnet/contract/YOUR_CONTRACT_ADDRESS`
