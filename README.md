@@ -1,45 +1,63 @@
 # ScholarChain — Decentralized Scholarship Fund on Stellar
 
-> **Stellar Journey to Mastery — Orange Belt Submission**
+<div align="center">
 
-ScholarChain is a decentralized application that brings scholarship funding on-chain. Donors connect their Freighter wallet, browse active student scholarships, and send XLM directly to student wallets on the Stellar testnet. Every transaction is permanent, public, and verifiable on-chain with zero intermediaries.
+**[Live Demo](https://stellar-scholarship-fund.vercel.app)** &nbsp;|&nbsp; **[Demo Video](https://drive.google.com/file/d/115AQTwqrVKhO6BbTxyRB5l6jVW3ZEJZp/view?usp=sharing)** &nbsp;|&nbsp; **[Stellar Explorer](https://stellar.expert/explorer/testnet)**
+
+![CI](https://github.com/shakshi-06/stellar-scholarship-fund/actions/workflows/ci.yml/badge.svg)
+![Stellar](https://img.shields.io/badge/Stellar-Testnet-blue)
+![React](https://img.shields.io/badge/React-18-61DAFB)
+![Tests](https://img.shields.io/badge/Tests-20%20passing-brightgreen)
+
+</div>
 
 ---
 
-## Live Demo
+## The Problem
 
-**[ADD YOUR DEPLOYMENT LINK HERE]**
+Every year, thousands of deserving students in India lose access to education because scholarship money never reaches them. Traditional scholarship systems rely on banks, NGOs, and government portals — each layer adding delays, fees, and opportunities for funds to go missing. There is no way for a donor to verify that their money actually reached the student.
 
----
+## The Solution
 
-## Demo Video
-
-**[ADD YOUR LOOM / YOUTUBE LINK HERE]** *(1-2 minutes)*
+ScholarChain puts scholarship funds directly on the Stellar blockchain. A donor connects their Freighter wallet, selects a student, and sends XLM — the payment goes straight to the student's wallet in seconds, with a permanent transaction hash that anyone can verify on Stellar Explorer. No middlemen. No hidden fees. No trust required.
 
 ---
 
 ## Screenshots
 
-### Desktop UI
-> *[Add screenshot of the full landing page on desktop]*
-
 ### Mobile Responsive UI
-> *[Add screenshot of the app on mobile screen]*
+
+<div align="center">
+  <img width="240" alt="Mobile Home" src="https://github.com/user-attachments/assets/82aee7e8-73c9-459c-bbbc-8c12f9ff50c7" />
+  &nbsp;
+  <img width="240" alt="Mobile Scholarships" src="https://github.com/user-attachments/assets/cf5979ab-63b6-40d9-87e7-9c32cea5cc72" />
+  &nbsp;
+  <img width="240" alt="Mobile Donate" src="https://github.com/user-attachments/assets/d151566d-643e-4e16-9e04-5c052e5345a9" />
+</div>
+
+### Desktop UI
+
+<img width="880" alt="Desktop UI" src="https://github.com/user-attachments/assets/f8010a3a-304e-40ea-a5f4-f0ff0f7c1f0e" />
 
 ### Wallet Connected State
-> *[Add screenshot showing wallet pill with address and balance in navbar]*
+
+<img width="880" alt="Wallet Connected" src="https://github.com/user-attachments/assets/0fa32e5b-9df7-432a-a562-0a3db9856600" />
 
 ### Donation Flow
-> *[Add screenshot of the donation modal with amount selected]*
+
+<img width="880" alt="Donation Flow" src="https://github.com/user-attachments/assets/1379f9b1-7021-4422-8170-5c19be8c2f88" />
 
 ### Transaction Success
-> *[Add screenshot of the success screen with transaction hash]*
+
+<img width="880" alt="Transaction Success" src="https://github.com/user-attachments/assets/87fb522f-7da1-4bd0-a0f3-942c4dbf8f2c" />
 
 ### CI/CD Pipeline Running
-> *[Add screenshot of GitHub Actions showing green check on Test & Build job]*
+
+<img width="880" alt="CI/CD Pipeline" src="https://github.com/user-attachments/assets/a074f647-1b94-444a-ac96-fbc87e272ed2" />
 
 ### Test Output
-> *[Add screenshot of terminal showing 20 passing tests]*
+
+<img width="680" alt="Test Output" src="https://github.com/user-attachments/assets/7ee7d410-3f80-4c94-a89b-8b6477171759" />
 
 ---
 
@@ -47,16 +65,16 @@ ScholarChain is a decentralized application that brings scholarship funding on-c
 
 **Network:** Stellar Testnet
 
-- **ScholarshipFund Contract:** `CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD`
-- **ScholarshipRegistry Contract:** `CDEZQ5BPXY7T6BB3X3ZFBXUBSKKEDAHQFN4FSMOWQHJTL5S5CHFIXZ7G`
-- **Deployer Address:** `GBSDMYKZ5XKUYWFPECBE6E2XSCD44UCYEOWXOYFQGWXYRVTIF34AKALD`
-### Deployment Transactions
-- **Registry Contract Deployment:** [9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d](https://stellar.expert/explorer/testnet/tx/9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d)
-- **ScholarshipFund Contract Deployment:** [Your second deployment tx hash here]
+| Field | Value |
+|-------|-------|
+| ScholarshipFund Contract | `CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD` |
+| ScholarshipRegistry Contract | `CDEZQ5BPXY7T6BB3X3ZFBXUBSKKEDAHQFN4FSMOWQHJTL5S5CHFIXZ7G` |
+| Deployer Address | `GBSDMYKZ5XKUYWFPECBE6E2XSCD44UCYEOWXOYFQGWXYRVTIF34AKALD` |
+| Transaction Hash | `9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d` |
 
 Verify on Stellar Explorer:
-- Contract: `https://stellar.expert/explorer/testnet/contract/YOUR_CONTRACT_ADDRESS`
-- Transaction: `https://stellar.expert/explorer/testnet/tx/YOUR_TX_HASH`
+- [ScholarshipFund Contract](https://stellar.expert/explorer/testnet/contract/CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD)
+- [Transaction](https://stellar.expert/explorer/testnet/tx/9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d)
 
 ---
 
@@ -67,28 +85,29 @@ Verify on Stellar Explorer:
 | Public GitHub repository | Done |
 | README with complete documentation | Done |
 | 10+ meaningful commits | Done |
-| Live demo link | Add yours above |
-| Contract deployment address | Add yours above |
-| Transaction hash for contract interaction | Add yours above |
-| Screenshot: Mobile responsive UI | Add above |
-| Screenshot: CI/CD pipeline running | Add above |
-| Screenshot: Test output (20 passing tests) | Add above |
-| Demo video (1-2 minutes) | Add above |
+| Live demo link | Done |
+| Contract deployment address | Done |
+| Transaction hash for contract interaction | Done |
+| Screenshot: Mobile responsive UI | Done |
+| Screenshot: CI/CD pipeline running | Done |
+| Screenshot: Test output (20 passing) | Done |
+| Demo video (1-2 minutes) | Done |
 
 ---
 
 ## Features
 
 - Freighter wallet connect and disconnect
-- XLM balance fetch and display
+- XLM balance fetch and real-time display
 - Send XLM transactions on Stellar Testnet
-- Transaction success/failure feedback with hash
-- View transaction on Stellar Explorer
+- Transaction success and failure feedback with hash
+- View every transaction on Stellar Explorer
 - Friendbot integration to fund testnet accounts
-- Filter scholarships by field
-- Mobile responsive layout
+- Live activity feed polling Stellar Horizon every 8 seconds
+- Filter scholarships by field of study
+- Mobile responsive layout down to 320px
 - CI/CD pipeline via GitHub Actions
-- Soroban smart contract (Rust) deployed on testnet
+- Two Soroban smart contracts with inter-contract communication
 - 20 passing tests across 3 test files
 
 ---
@@ -101,7 +120,7 @@ Verify on Stellar Explorer:
 | Styling | Pure CSS with custom properties |
 | Wallet | Freighter (`@stellar/freighter-api`) |
 | Blockchain | Stellar Testnet |
-| Smart Contract | Soroban (Rust) |
+| Smart Contracts | Soroban (Rust) — ScholarshipFund + Registry |
 | SDK | `@stellar/stellar-sdk` |
 | Testing | Vitest + Testing Library |
 | CI/CD | GitHub Actions |
@@ -109,12 +128,54 @@ Verify on Stellar Explorer:
 
 ---
 
+## Smart Contracts
+
+Two contracts demonstrating inter-contract communication:
+
+**ScholarshipFund** — main contract managing scholarships, donations, and events. Calls into the Registry on every scholarship creation and goal completion.
+
+**ScholarshipRegistry** — secondary contract receiving cross-contract calls from ScholarshipFund to maintain a global index of all scholarships and their funded status.
+
+### Contract Functions
+
+| Contract | Function | Description |
+|----------|----------|-------------|
+| ScholarshipFund | `initialize(admin, registry)` | Set up with admin wallet and registry address |
+| ScholarshipFund | `create_scholarship(caller, recipient, goal, title)` | Admin creates a scholarship |
+| ScholarshipFund | `record_donation(donor, id, amount)` | Record donation and notify registry |
+| ScholarshipFund | `get_scholarship(id)` | Read scholarship data |
+| ScholarshipFund | `deactivate(caller, id)` | Admin closes a scholarship |
+| ScholarshipRegistry | `register(id, recipient, fund)` | Called by ScholarshipFund on creation |
+| ScholarshipRegistry | `mark_funded(id)` | Called by ScholarshipFund when goal is reached |
+
+### Deploy to Testnet
+
+```bash
+# Deploy Registry
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/scholarship_registry.wasm \
+  --network testnet --source deployer
+
+# Deploy ScholarshipFund
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/scholarship_fund.wasm \
+  --network testnet --source deployer
+
+# Initialize
+stellar contract invoke \
+  --id FUND_CONTRACT_ADDRESS \
+  --network testnet --source deployer \
+  -- initialize \
+  --admin YOUR_ADDRESS \
+  --registry REGISTRY_CONTRACT_ADDRESS
+```
+
+---
+
 ## Error Handling
 
-The app handles 6 distinct error types with clear user messages:
-
-| Error | Cause | Message Shown |
-|-------|-------|---------------|
+| Error | Cause | User Message |
+|-------|-------|-------------|
 | `FREIGHTER_NOT_INSTALLED` | Extension not found | Link to install Freighter |
 | `USER_DECLINED` | User rejected wallet access | "Connection cancelled" |
 | `INSUFFICIENT_BALANCE` | Not enough XLM | "Get Test XLM first" |
@@ -124,54 +185,29 @@ The app handles 6 distinct error types with clear user messages:
 
 ---
 
-## Smart Contract
-
-The Soroban smart contract is written in Rust and located at `contracts/scholarship_fund.rs`.
-
-**Functions:**
-
-| Function | Description |
-|----------|-------------|
-| `initialize(admin)` | Set up contract with admin wallet |
-| `create_scholarship(caller, recipient, goal, title)` | Admin creates a new scholarship |
-| `record_donation(donor, id, amount)` | Record a donation after XLM transfer |
-| `get_scholarship(id)` | Read scholarship data |
-| `get_donation(id, donor)` | Check donation amount from a specific donor |
-| `deactivate(caller, id)` | Admin closes a scholarship |
-
-**Deploy to testnet:**
-```bash
-stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/scholarship_fund.wasm \
-  --network testnet \
-  --source YOUR_KEYPAIR_NAME
-```
-
----
-
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 20+
-- [Freighter Wallet](https://www.freighter.app/) browser extension
-- Freighter set to **Testnet** network
+- [Freighter Wallet](https://www.freighter.app/) browser extension set to **Testnet**
 
 ### Installation
 
 ```bash
-git clone https://github.com/Shakshi-Kotwala/stellar-scholarship-fund.git
+git clone https://github.com/shakshi-06/stellar-scholarship-fund.git
 cd stellar-scholarship-fund
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser.
+Open `http://localhost:5173`
 
 ### Get Test XLM
 
-1. Connect your Freighter wallet (set to Testnet)
-2. Click **"Get Test XLM"** in the wallet panel
-3. 10,000 XLM test tokens will be added via Stellar Friendbot
+1. Connect Freighter wallet (set to Testnet)
+2. Click **Get Test XLM** in the wallet panel
+3. 10,000 XLM test tokens arrive via Stellar Friendbot
 
 ---
 
@@ -181,48 +217,13 @@ Open `http://localhost:5173` in your browser.
 npm test
 ```
 
-Output: **20 tests passing** across 3 files:
+20 tests passing across 3 files:
 
-| File | Tests | What it covers |
-|------|-------|----------------|
+| File | Tests | Covers |
+|------|-------|--------|
 | `stellar.test.js` | 6 | formatXLM, shortAddress, network constants, explorer URL |
 | `freighter.test.js` | 9 | install detection, connect flow, decline handling, error cases |
 | `ScholarshipCard.test.jsx` | 5 | render, progress display, click handler, days left |
-
----
-
-## Project Structure
-
-```
-stellar-scholarship-fund/
-├── .github/
-│   └── workflows/
-│       └── ci.yml                 CI/CD pipeline
-├── contracts/
-│   └── scholarship_fund.rs        Soroban smart contract
-├── src/
-│   ├── __tests__/                 20 passing tests
-│   ├── components/
-│   │   ├── Navbar.jsx
-│   │   ├── Hero.jsx
-│   │   ├── ScholarshipCard.jsx
-│   │   ├── DonateModal.jsx
-│   │   ├── WalletPanel.jsx
-│   │   ├── ScholarshipList.jsx
-│   │   ├── HowItWorks.jsx
-│   │   └── Footer.jsx
-│   ├── context/
-│   │   └── WalletContext.jsx      Global wallet state
-│   ├── utils/
-│   │   ├── stellar.js             Horizon + transaction logic
-│   │   └── freighter.js           Freighter wallet API
-│   ├── App.jsx
-│   ├── index.css                  Design system
-│   └── main.jsx
-├── index.html
-├── vite.config.js
-└── README.md
-```
 
 ---
 
@@ -231,7 +232,7 @@ stellar-scholarship-fund/
 GitHub Actions runs on every push to `main`:
 
 1. Install dependencies (`npm ci`)
-2. Run all tests (`npm test`)
+2. Run all 20 tests (`npm test`)
 3. Build project (`npm run build`)
 4. Upload build artifact
 
@@ -239,11 +240,34 @@ Pipeline file: `.github/workflows/ci.yml`
 
 ---
 
-## Wallet Used
+## Project Structure
 
-**Freighter Wallet (Testnet)**
-
-Address: `GDX2ILXF5EHCELK6KREHFGDFKPJMAH74FIATNESSVNKYD4LPPSAGZNGL`
+```
+stellar-scholarship-fund/
+├── .github/workflows/ci.yml
+├── contracts/
+│   ├── scholarship_fund/        Main Soroban contract
+│   └── registry/                Registry contract (inter-contract comms)
+├── src/
+│   ├── __tests__/               20 passing tests
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── Hero.jsx
+│   │   ├── ScholarshipCard.jsx
+│   │   ├── DonateModal.jsx
+│   │   ├── WalletPanel.jsx
+│   │   ├── ScholarshipList.jsx
+│   │   ├── ActivityFeed.jsx     Real-time event streaming
+│   │   ├── HowItWorks.jsx
+│   │   └── Footer.jsx
+│   ├── context/WalletContext.jsx
+│   ├── utils/
+│   │   ├── stellar.js
+│   │   └── freighter.js
+│   ├── App.jsx
+│   └── index.css
+└── README.md
+```
 
 ---
 
@@ -251,6 +275,10 @@ Address: `GDX2ILXF5EHCELK6KREHFGDFKPJMAH74FIATNESSVNKYD4LPPSAGZNGL`
 
 Built by **Shakshi** for the **Stellar Journey to Mastery — Orange Belt** challenge.
 
-- GitHub: [Shakshi-Kotwala](https://github.com/Shakshi-Kotwala)
+- GitHub: [shakshi-06](https://github.com/shakshi-06)
 - Network: Stellar Testnet
-- Wallet: Freighter
+- Wallet: `GDX2ILXF5EHCELK6KREHFGDFKPJMAH74FIATNESSVNKYD4LPPSAGZNGL`
+
+## License
+
+MIT
