@@ -1,79 +1,86 @@
-import { useState } from "react";
 import { useWallet } from "../context/WalletContext";
-import { shortAddress, formatXLM } from "../utils/stellar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { LogOut, RefreshCw, Building2, GraduationCap } from "lucide-react";
+import { formatXLM, shortAddress, fundTestnetAccount } from "../utils/stellar";
+import { useState } from "react";
 
 export default function Navbar() {
-  const { publicKey, balance, isConnecting, isLoadingBalance, connect, disconnect, freighterInstalled, walletError } = useWallet();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { publicKey, balance, isLoadingBalance, role, disconnect, refreshBalance } = useWallet();
+  const [funding, setFunding] = useState(false);
+
+  const handleFund = async () => {
+    setFunding(true);
+    try {
+      await fundTestnetAccount(publicKey);
+      await refreshBalance();
+    } catch {}
+    finally { setFunding(false); }
+  };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-inner">
-        <div className="navbar-brand">
-          <span className="brand-name">ScholarChain</span>
-          <span className="brand-badge">Testnet</span>
+    <header className="sticky top-0 z-50 bg-white border-b border-stone-200">
+      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-4">
+        {/* Brand */}
+        <div className="flex items-center gap-2.5 mr-auto">
+          <span className="font-['Syne'] font-extrabold text-base tracking-tight text-stone-900">
+            ScholarChain
+          </span>
+          <span className="text-[10px] font-bold bg-[#F2D94E] text-stone-900 px-2 py-0.5 rounded-full uppercase tracking-wider">
+            Testnet
+          </span>
         </div>
 
-        <div className="navbar-links desktop-only">
-          <a href="#scholarships">Scholarships</a>
-          <a href="#how">How It Works</a>
-        </div>
+        {/* Role badge */}
+        {role && (
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500">
+            {role === "provider"
+              ? <><Building2 className="w-3.5 h-3.5" /> Provider</>
+              : <><GraduationCap className="w-3.5 h-3.5" /> Student</>
+            }
+          </div>
+        )}
 
-        <div className="navbar-actions desktop-only">
-          {!publicKey ? (
-            <button
-              className="btn-connect"
-              onClick={connect}
-              disabled={isConnecting || freighterInstalled === false}
-              title={freighterInstalled === false ? "Install Freighter wallet first" : ""}
-            >
-              {isConnecting ? <><span className="spinner-sm" /> Connecting</> : "Connect Wallet"}
+        <Separator orientation="vertical" className="h-5 hidden sm:block" />
+
+        {/* Balance */}
+        {publicKey && (
+          <div className="hidden sm:flex items-center gap-2 text-sm">
+            <span className="text-stone-400 text-xs">Balance</span>
+            <span className="font-semibold text-stone-900">
+              {isLoadingBalance ? "..." : `${formatXLM(balance)} XLM`}
+            </span>
+            <button onClick={() => refreshBalance()} className="text-stone-400 hover:text-stone-600 transition-colors" title="Refresh balance">
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
-          ) : (
-            <div className="wallet-pill">
-              <div className="wallet-info">
-                <span className="wallet-addr">{shortAddress(publicKey)}</span>
-                <span className="wallet-balance">
-                  {isLoadingBalance ? "..." : `${formatXLM(balance)} XLM`}
-                </span>
-              </div>
-              <button className="btn-disconnect" onClick={disconnect} title="Disconnect">x</button>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        <button className="hamburger mobile-only" onClick={() => setMenuOpen(!menuOpen)}>
-          <span /><span /><span />
-        </button>
+        {/* Wallet pill */}
+        {publicKey && (
+          <div className="flex items-center gap-2 bg-stone-100 rounded-md px-3 py-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+            <span className="text-xs font-medium text-stone-700 font-mono">
+              {shortAddress(publicKey)}
+            </span>
+          </div>
+        )}
+
+        {/* Get test XLM */}
+        {publicKey && parseFloat(balance) < 10 && (
+          <Button variant="outline" size="sm" onClick={handleFund} disabled={funding} className="hidden sm:flex text-xs h-8">
+            {funding ? "Funding..." : "Get Test XLM"}
+          </Button>
+        )}
+
+        {/* Disconnect */}
+        {publicKey && (
+          <Button variant="ghost" size="icon" onClick={disconnect} title="Disconnect" className="h-8 w-8">
+            <LogOut className="w-4 h-4" />
+          </Button>
+        )}
       </div>
-
-      {menuOpen && (
-        <div className="mobile-menu">
-          <a href="#scholarships" onClick={() => setMenuOpen(false)}>Scholarships</a>
-          <a href="#how" onClick={() => setMenuOpen(false)}>How It Works</a>
-          {!publicKey ? (
-            <button className="btn-connect" onClick={() => { connect(); setMenuOpen(false); }} disabled={isConnecting}>
-              {isConnecting ? "Connecting..." : "Connect Wallet"}
-            </button>
-          ) : (
-            <div className="mobile-wallet">
-              <span>{shortAddress(publicKey)}</span>
-              <span>{formatXLM(balance)} XLM</span>
-              <button onClick={() => { disconnect(); setMenuOpen(false); }}>Disconnect</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {walletError && (
-        <div className="navbar-error">
-          {walletError === "FREIGHTER_NOT_INSTALLED" && (
-            <>Freighter not found. <a href="https://www.freighter.app" target="_blank" rel="noreferrer">Install it here</a></>
-          )}
-          {walletError === "USER_DECLINED" && "Connection cancelled."}
-          {walletError === "CONNECTION_FAILED" && "Could not connect. Please try again."}
-        </div>
-      )}
-    </nav>
+    </header>
   );
 }

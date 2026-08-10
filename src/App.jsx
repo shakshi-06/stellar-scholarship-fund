@@ -1,27 +1,29 @@
-import { WalletProvider } from "./context/WalletContext";
+import { WalletProvider, useWallet } from "./context/WalletContext";
+import { AppProvider } from "./context/AppContext";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import WalletPanel from "./components/WalletPanel";
-import ScholarshipList from "./components/ScholarshipList";
-import ActivityFeed from "./components/ActivityFeed";
-import HowItWorks from "./components/HowItWorks";
-import Footer from "./components/Footer";
-import "./App.css";
+import RoleSelect from "./pages/RoleSelect";
+import ProviderPortal from "./pages/ProviderPortal";
+import StudentPortal from "./pages/StudentPortal";
+
+function AppRoutes() {
+  const { publicKey, role } = useWallet();
+
+  if (!publicKey || !role) return <RoleSelect />;
+
+  return (
+    <div className="min-h-screen bg-stone-50">
+      <Navbar />
+      {role === "provider" ? <ProviderPortal /> : <StudentPortal />}
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <WalletProvider>
-      <div className="app">
-        <Navbar />
-        <main>
-          <Hero />
-          <WalletPanel />
-          <ScholarshipList />
-          <ActivityFeed />
-          <HowItWorks />
-        </main>
-        <Footer />
-      </div>
+      <AppProvider>
+        <AppRoutes />
+      </AppProvider>
     </WalletProvider>
   );
 }

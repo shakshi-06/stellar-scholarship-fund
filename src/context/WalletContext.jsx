@@ -11,6 +11,7 @@ export const WalletProvider = ({ children }) => {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [walletError, setWalletError] = useState(null);
   const [freighterInstalled, setFreighterInstalled] = useState(null);
+  const [role, setRole] = useState(null); // "provider" | "student" | null
 
   useEffect(() => {
     checkFreighterInstalled().then(setFreighterInstalled);
@@ -30,12 +31,13 @@ export const WalletProvider = ({ children }) => {
     }
   }, [publicKey]);
 
-  const connect = useCallback(async () => {
+  const connect = useCallback(async (selectedRole) => {
     setIsConnecting(true);
     setWalletError(null);
     try {
       const pk = await connectFreighter();
       setPublicKey(pk);
+      setRole(selectedRole);
       await refreshBalance(pk);
     } catch (err) {
       setWalletError(err.message);
@@ -48,13 +50,18 @@ export const WalletProvider = ({ children }) => {
     setPublicKey(null);
     setBalance(null);
     setWalletError(null);
+    setRole(null);
+  }, []);
+
+  const switchRole = useCallback((newRole) => {
+    setRole(newRole);
   }, []);
 
   return (
     <WalletContext.Provider value={{
       publicKey, balance, isConnecting, isLoadingBalance,
-      walletError, freighterInstalled,
-      connect, disconnect, refreshBalance,
+      walletError, freighterInstalled, role,
+      connect, disconnect, refreshBalance, switchRole,
     }}>
       {children}
     </WalletContext.Provider>
