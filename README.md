@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**[Live Demo](https://stellar-scholarship-fund.vercel.app)** &nbsp;|&nbsp; **[Demo Video](https://drive.google.com/file/d/115AQTwqrVKhO6BbTxyRB5l6jVW3ZEJZp/view?usp=sharing)** &nbsp;|&nbsp; **[Stellar Explorer](https://stellar.expert/explorer/testnet)**
+**[Live Demo](https://stellar-scholarship-fund.vercel.app)** &nbsp;|&nbsp; **[Demo Video](https://drive.google.com/file/d/124kxK2uSOew13eTkFWWzQvtpQRQU5_ci/view?usp=sharing)** &nbsp;|&nbsp; **[Stellar Explorer](https://stellar.expert/explorer/testnet)**
 
 ![CI](https://github.com/shakshi-06/stellar-scholarship-fund/actions/workflows/ci.yml/badge.svg)
 ![Stellar](https://img.shields.io/badge/Stellar-Testnet-blue)
@@ -15,11 +15,11 @@
 
 ## The Problem
 
-Every year, thousands of deserving students in India lose access to education because scholarship money never reaches them. Traditional scholarship systems rely on banks, NGOs, and government portals — each layer adding delays, fees, and opportunities for funds to go missing. There is no way for a donor to verify that their money actually reached the student.
+Every year, thousands of deserving students in India lose access to education because scholarship money never reaches them. Traditional scholarship systems rely on banks, NGOs, and government portals - each layer adding delays, fees, and opportunities for funds to go missing. There is no way for a donor to verify that their money actually reached the student.
 
 ## The Solution
 
-ScholarChain puts scholarship funds directly on the Stellar blockchain. A donor connects their Freighter wallet, selects a student, and sends XLM — the payment goes straight to the student's wallet in seconds, with a permanent transaction hash that anyone can verify on Stellar Explorer. No middlemen. No hidden fees. No trust required.
+ScholarChain puts scholarship funds directly on the Stellar blockchain. A donor connects their Freighter wallet, selects a student, and sends XLM - the payment goes straight to the student's wallet in seconds, with a permanent transaction hash that anyone can verify on Stellar Explorer. No middlemen. No hidden fees. No trust required.
 
 ---
 
@@ -78,22 +78,6 @@ Verify on Stellar Explorer:
 
 ---
 
-## Submission Checklist
-
-| Requirement | Status |
-|-------------|--------|
-| Public GitHub repository | Done |
-| README with complete documentation | Done |
-| 10+ meaningful commits | Done |
-| Live demo link | Done |
-| Contract deployment address | Done |
-| Transaction hash for contract interaction | Done |
-| Screenshot: Mobile responsive UI | Done |
-| Screenshot: CI/CD pipeline running | Done |
-| Screenshot: Test output (20 passing) | Done |
-| Demo video (1-2 minutes) | Done |
-
----
 
 ## Features
 
@@ -273,11 +257,7 @@ stellar-scholarship-fund/
 
 ## Author
 
-Built by **Shakshi** for the **Stellar Journey to Mastery — Orange Belt** challenge.
-
-- GitHub: [shakshi-06](https://github.com/shakshi-06)
-- Network: Stellar Testnet
-- Wallet: `GDX2ILXF5EHCELK6KREHFGDFKPJMAH74FIATNESSVNKYD4LPPSAGZNGL`
+Shakshi Kotwaka - (https://github.com/shakshi-06)
 
 ## License
 
