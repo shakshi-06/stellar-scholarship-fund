@@ -11,7 +11,8 @@ export const WalletProvider = ({ children }) => {
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [walletError, setWalletError] = useState(null);
   const [freighterInstalled, setFreighterInstalled] = useState(null);
-  const [role, setRole] = useState(null); // "provider" | "student" | null
+  // role: "student" | "donor" | null
+  const [role, setRole] = useState(null);
 
   useEffect(() => {
     checkFreighterInstalled().then(setFreighterInstalled);
@@ -53,15 +54,11 @@ export const WalletProvider = ({ children }) => {
     setRole(null);
   }, []);
 
-  const switchRole = useCallback((newRole) => {
-    setRole(newRole);
-  }, []);
-
   return (
     <WalletContext.Provider value={{
       publicKey, balance, isConnecting, isLoadingBalance,
       walletError, freighterInstalled, role,
-      connect, disconnect, refreshBalance, switchRole,
+      connect, disconnect, refreshBalance,
     }}>
       {children}
     </WalletContext.Provider>
