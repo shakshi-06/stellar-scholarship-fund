@@ -1,18 +1,57 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 
 // SC-FUND memo used on all donation transactions
 // This lets us detect ScholarChain payments on Horizon
 export const SC_MEMO = "SC-FUND";
 
+// localStorage keys — BUG FIX: previously all app state (requests, donations,
+// feedback) lived only in React state and was wiped on every refresh/tab close.
+// That made it impossible to onboard real users or collect durable feedback.
+const LS_REQUESTS = "scfund_requests";
+const LS_DONATIONS = "scfund_donations";
+const LS_FEED = "scfund_activity_feed";
+const LS_FEEDBACK = "scfund_feedback";
+
+const loadLS = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
 const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
   // Requests posted by students
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState(() => loadLS(LS_REQUESTS, []));
   // Donations made by donors { requestId, amount, txHash, from, to, time }
-  const [donations, setDonations] = useState([]);
+  const [donations, setDonations] = useState(() => loadLS(LS_DONATIONS, []));
   // Activity feed entries
-  const [activityFeed, setActivityFeed] = useState([]);
+  const [activityFeed, setActivityFeed] = useState(() => loadLS(LS_FEED, []));
+  // User feedback submissions { name, rating, comment, time }
+  const [feedback, setFeedback] = useState(() => loadLS(LS_FEEDBACK, []));
+
+  // Persist to localStorage whenever state changes
+  useEffect(() => {
+    try { localStorage.setItem(LS_REQUESTS, JSON.stringify(requests)); } catch {}
+  }, [requests]);
+  useEffect(() => {
+    try { localStorage.setItem(LS_DONATIONS, JSON.stringify(donations)); } catch {}
+  }, [donations]);
+  useEffect(() => {
+    try { localStorage.setItem(LS_FEED, JSON.stringify(activityFeed)); } catch {}
+  }, [activityFeed]);
+  useEffect(() => {
+    try { localStorage.setItem(LS_FEEDBACK, JSON.stringify(feedback)); } catch {}
+  }, [feedback]);
+
+  const addFeedback = useCallback((entry) => {
+    const newEntry = { ...entry, id: Date.now(), time: new Date().toISOString() };
+    setFeedback(prev => [newEntry, ...prev]);
+    return newEntry;
+  }, []);
 
   const addActivity = useCallback((message) => {
     setActivityFeed(prev => [
@@ -90,6 +129,8 @@ export const AppProvider = ({ children }) => {
       expiredRequests,
       donations,
       activityFeed,
+      feedback,
+      addFeedback,
       postRequest,
       recordFunding,
       isExpired,
