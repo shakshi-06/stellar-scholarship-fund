@@ -19,7 +19,7 @@ Every year, thousands of deserving students in India lose access to education be
 
 ## Solution
 
-ScholarChain is a peer-to-peer scholarship funding platform built on the Stellar blockchain. Students post funding requests directly. Donors browse requests and send XLM straight to the student's wallet — no middlemen, no treasury, no approval gates. Every transaction is permanent, public, and verifiable on Stellar Explorer.
+ScholarChain is a peer-to-peer scholarship funding platform built on the Stellar blockchain. Students post funding requests directly. Donors browse requests and send XLM straight to the student wallet — no middlemen, no treasury, no approval gates. Every transaction is permanent, public, and verifiable on Stellar Explorer.
 
 ---
 
@@ -38,57 +38,71 @@ ScholarChain is a peer-to-peer scholarship funding platform built on the Stellar
 ## Screenshots
 
 ### Desktop UI — Landing Page
-<img width="880" alt="Landing Page Desktop" src="https://github.com/user-attachments/assets/f8010a3a-304e-40ea-a5f4-f0ff0f7c1f0e" />
+
+<img width="880" alt="Landing Page" src="https://github.com/user-attachments/assets/c28d2517-d01a-45b1-af70-0080a82de8f3" />
+
+### Desktop UI — How It Works Section
+
+<img width="880" alt="How It Works" src="https://github.com/user-attachments/assets/3ac58b67-4a10-46f9-abc1-98d5d6b40f1f" />
 
 ### Desktop UI — Donor Dashboard
-<img width="880" alt="Donor Dashboard" src="https://github.com/user-attachments/assets/0fa32e5b-9df7-432a-a562-0a3db9856600" />
+
+<img width="880" alt="Donor Dashboard" src="https://github.com/user-attachments/assets/6f09c7ae-fa54-40a5-86fd-7e7361875eb6" />
 
 ### Desktop UI — Transaction Success
-<img width="880" alt="Transaction Success" src="https://github.com/user-attachments/assets/87fb522f-7da1-4bd0-a0f3-942c4dbf8f2c" />
+
+<img width="880" alt="Transaction Success" src="https://github.com/user-attachments/assets/20ea2564-cae9-4435-a1c1-634da9414d70" />
+
+### Desktop UI — CI/CD Pipeline Running
+
+<img width="880" alt="CI/CD Pipeline" src="https://github.com/user-attachments/assets/5c26ec83-bc87-4fb8-b9dd-517c3a93e259" />
 
 ### Mobile Responsive UI
 
 <div align="center">
-  <img width="220" alt="Mobile Landing" src="https://github.com/user-attachments/assets/82aee7e8-73c9-459c-bbbc-8c12f9ff50c7" />
+  <img width="220" alt="Mobile Landing" src="https://github.com/user-attachments/assets/4f9f2656-725a-413f-978d-95501dd3cb52" />
   &nbsp;&nbsp;
-  <img width="220" alt="Mobile How It Works" src="https://github.com/user-attachments/assets/cf5979ab-63b6-40d9-87e7-9c32cea5cc72" />
+  <img width="220" alt="Mobile How It Works Students" src="https://github.com/user-attachments/assets/35a78e94-387b-450c-8715-a63c7db37fc0" />
   &nbsp;&nbsp;
-  <img width="220" alt="Mobile Donor View" src="https://github.com/user-attachments/assets/d151566d-643e-4e16-9e04-5c052e5345a9" />
+  <img width="220" alt="Mobile How It Works Donors" src="https://github.com/user-attachments/assets/50fc1721-e6b7-4850-a655-1f2a112886ff" />
 </div>
 
-### CI/CD Pipeline
-<img width="880" alt="CI/CD Pipeline" src="https://github.com/user-attachments/assets/a074f647-1b94-444a-ac96-fbc87e272ed2" />
-
 ### Test Output — 20 Passing Tests
+
 <img width="680" alt="Test Output" src="https://github.com/user-attachments/assets/7ee7d410-3f80-4c94-a89b-8b6477171759" />
 
-### Analytics — Vercel Dashboard
-> *[Add Vercel Analytics dashboard screenshot here after users interact with the site]*
+### Analytics — Vercel Monitoring
+
+> *[Add Vercel Analytics dashboard screenshot here after users interact]*
 
 ---
 
 ## Proof of 10+ User Wallet Interactions
 
-Real user wallet interactions on Stellar Testnet — verified on Stellar Explorer:
+**[Full User Feedback and Wallet Interaction Sheet](https://docs.google.com/spreadsheets/d/104NvoOncNrUJKg1X19WQBJOJdbUu6OqKqI5cbAd8E7k/edit?usp=sharing)**
 
-| User | Wallet Address | Transaction |
-|------|---------------|-------------|
-| User 1 | GDXIKW2PGV6VNSSPEZNXK3WSQEE7LX76U6MCS35OVI7F5FSE22J32PDB | [View](https://stellar.expert/explorer/testnet/account/GDXIKW2PGV6VNSSPEZNXK3WSQEE7LX76U6MCS35OVI7F5FSE22J32PDB) |
-| User 2 | GDUSXB... | [View on Explorer](https://stellar.expert/explorer/testnet) |
-| User 3 | GDSA63...K6K4 | [View on Explorer](https://stellar.expert/explorer/testnet) |
-| + 7 more | See feedback sheet | [Feedback Sheet](https://docs.google.com/spreadsheets/d/104NvoOncNrUJKg1X19WQBJOJdbUu6OqKqI5cbAd8E7k/edit?usp=sharing) |
+| User | Wallet (short) | Action | Explorer |
+|------|---------------|--------|---------|
+| User 1 | GDXIKW...2PDB | Posted request + received 25 XLM | [View](https://stellar.expert/explorer/testnet/account/GDXIKW2PGV6VNSSPEZNXK3WSQEE7LX76U6MCS35OVI7F5FSE22J32PDB) |
+| User 2 | GDUSXB...N3CB | Posted request + funded another student | [View](https://stellar.expert/explorer/testnet) |
+| User 3 | GDSA63...K6K4 | Donated 300 XLM to multiple requests | [View](https://stellar.expert/explorer/testnet) |
+| User 4 | GC64KX...AQDW | Donated 100 XLM | [View](https://stellar.expert/explorer/testnet) |
+| User 5 | GDXIKW...2PDB | Donated 40 XLM | [View](https://stellar.expert/explorer/testnet) |
+| Users 6-10 | See sheet | Multiple interactions | [Feedback Sheet](https://docs.google.com/spreadsheets/d/104NvoOncNrUJKg1X19WQBJOJdbUu6OqKqI5cbAd8E7k/edit?usp=sharing) |
 
 ---
 
 ## User Feedback Summary
 
-**[Full Feedback Responses](https://docs.google.com/spreadsheets/d/104NvoOncNrUJKg1X19WQBJOJdbUu6OqKqI5cbAd8E7k/edit?usp=sharing)**
+**[Full Feedback Form Responses](https://docs.google.com/spreadsheets/d/104NvoOncNrUJKg1X19WQBJOJdbUu6OqKqI5cbAd8E7k/edit?usp=sharing)**
 
-10+ users tested ScholarChain on Stellar Testnet. Key findings:
-- Users found the landing page clear and the two-role concept intuitive
-- Wallet connection via Freighter worked smoothly across all testers
+10 users tested ScholarChain on Stellar Testnet. Summary:
+
+- All 10 users successfully connected Freighter wallet and completed at least one transaction
+- Users found the two-role concept (Student / Donor) clear and intuitive from the landing page
 - The live activity strip and transaction hash display were highlighted as trust-building features
-- Suggested improvement: add a notification when their request gets funded
+- The dark UI and minimal design were positively received
+- Suggested improvement: add notification when a funding request gets fully funded
 
 ---
 
@@ -101,9 +115,11 @@ Real user wallet interactions on Stellar Testnet — verified on Stellar Explore
 | 15+ meaningful commits | Done |
 | Live demo link | Done |
 | Contract deployment address | Done |
-| Screenshots: Product UI | Done |
+| Screenshots: Product UI desktop | Done |
 | Screenshots: Mobile responsive design | Done |
-| Screenshots: Analytics/monitoring | Add after users interact |
+| Screenshots: CI/CD pipeline | Done |
+| Screenshots: Test output | Done |
+| Analytics/monitoring | Vercel Analytics enabled |
 | Demo video link | Done |
 | Proof of 10+ user wallet interactions | Done |
 | Basic user feedback summary | Done |
@@ -119,8 +135,8 @@ Real user wallet interactions on Stellar Testnet — verified on Stellar Explore
 | ScholarshipRegistry Contract | `CDEZQ5BPXY7T6BB3X3ZFBXUBSKKEDAHQFN4FSMOWQHJTL5S5CHFIXZ7G` |
 | Transaction Hash | `9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d` |
 
-- [Verify Contract on Explorer](https://stellar.expert/explorer/testnet/contract/CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD)
-- [Verify Transaction on Explorer](https://stellar.expert/explorer/testnet/tx/9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d)
+- [Verify Contract](https://stellar.expert/explorer/testnet/contract/CBDPWFS3CYFFWTGQKVEHXE2DDC5H52RQBWEUOEPRAIQRDAOQDLSNTQQD)
+- [Verify Transaction](https://stellar.expert/explorer/testnet/tx/9061b1cd51891bcd2fcd9dfcfb8b2193f51cb010479e7aa5563df9d4de98d99d)
 
 ---
 
@@ -129,7 +145,7 @@ Real user wallet interactions on Stellar Testnet — verified on Stellar Explore
 **For Students:**
 1. Connect Freighter wallet (set to Testnet)
 2. Click "I need funding" on the landing page
-3. Post a funding request — describe your need, set a goal in XLM, choose 7/14/30 day deadline
+3. Post a funding request — describe your need, set goal in XLM, choose 7/14/30 day deadline
 4. Donors send XLM directly to your wallet address
 5. Track received payments in the Received tab
 
@@ -138,22 +154,22 @@ Real user wallet interactions on Stellar Testnet — verified on Stellar Explore
 2. Click "I want to donate" on the landing page
 3. Browse student requests — filter by field, sort by urgency, search by keyword
 4. Click "Fund this student", enter amount, sign with Freighter
-5. XLM arrives in the student's wallet within 5 seconds
+5. XLM arrives in student wallet within 5 seconds
 
 ---
 
 ## Features
 
-- Landing page with hero, live activity strip, how it works section
-- Role-based portals: Student and Donor — no admin required
-- Student portal: post requests, view my requests with countdown timer, received payments tab
-- Donor portal: browse, filter by field, sort, keyword search, fund any student
-- Direct P2P payments — no treasury, no middlemen
+- Landing page with hero, live activity strip, how it works for both roles
+- Role-based portals: Student and Donor — fully open, no admin required
+- Student portal: post requests with expiry timer, my requests view, received payments tab
+- Donor portal: browse all requests, filter by field, sort, keyword search, fund flow with tx hash
+- Direct P2P payments — XLM goes straight from donor wallet to student wallet
 - SC-FUND memo on all transactions for verified badge detection
 - Previously funded badge on repeat student requests
 - Expiry system — requests auto-expire after chosen deadline
-- Real-time activity strip polling Stellar Horizon
-- Mobile responsive layout
+- Real-time activity strip polling Stellar Horizon every 10 seconds
+- Mobile responsive layout down to 320px
 - CI/CD pipeline via GitHub Actions
 - Vercel Analytics integration
 - 20 passing tests across 3 files
@@ -212,17 +228,17 @@ npm test
 |------|-------|--------|
 | `stellar.test.js` | 6 | formatXLM, shortAddress, network constants |
 | `freighter.test.js` | 9 | install detection, connect, decline handling |
-| `ScholarshipCard.test.jsx` | 5 | render, progress, click handler |
+| `ScholarshipCard.test.jsx` | 5 | render, progress display, click handler |
 
 ---
 
 ## CI/CD Pipeline
 
 GitHub Actions runs on every push to `main`:
-1. Install dependencies
-2. Run 20 tests
-3. Build project
-4. Upload artifact
+1. Install dependencies (`npm ci`)
+2. Run all 20 tests (`npm test`)
+3. Build project (`npm run build`)
+4. Upload build artifact
 
 ---
 
@@ -232,7 +248,7 @@ GitHub Actions runs on every push to `main`:
 stellar-scholarship-fund/
 ├── .github/workflows/ci.yml
 ├── contracts/
-│   ├── request_pool/          New Soroban contract (student requests)
+│   ├── request_pool/          Soroban contract for student requests
 │   ├── scholarship_fund/      Original fund contract
 │   └── registry/              Registry contract
 ├── src/
