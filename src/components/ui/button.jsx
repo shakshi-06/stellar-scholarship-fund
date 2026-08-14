@@ -4,23 +4,23 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-stone-900 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-30 cursor-pointer rounded-md",
   {
     variants: {
       variant: {
-        default: "bg-stone-900 text-stone-50 shadow hover:bg-stone-800",
-        destructive: "bg-red-500 text-stone-50 shadow-sm hover:bg-red-600",
-        outline: "border border-stone-200 bg-white shadow-sm hover:bg-stone-50 hover:text-stone-900",
-        secondary: "bg-stone-100 text-stone-900 shadow-sm hover:bg-stone-200",
-        ghost: "hover:bg-stone-100 hover:text-stone-900",
-        link: "text-stone-900 underline-offset-4 hover:underline",
-        peach: "bg-[#F4956A] text-stone-900 shadow hover:bg-[#e07d54] font-semibold",
+        default:  "bg-white text-black text-sm hover:bg-neutral-200",
+        outline:  "border border-[#2a2a2a] bg-transparent text-[#f5f5f5] text-sm hover:border-[#444] hover:bg-[#1a1a1a]",
+        ghost:    "text-[#888] text-sm hover:text-white hover:bg-[#1a1a1a]",
+        yellow:   "bg-[#f2d94e] text-black text-sm font-semibold hover:bg-[#e8cf3a]",
+        danger:   "bg-[#ef4444] text-white text-sm hover:bg-[#dc2626]",
+        surface:  "bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] text-sm hover:bg-[#222] hover:border-[#333]",
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
+        sm:      "h-7 px-3 text-xs",
+        lg:      "h-10 px-6",
+        icon:    "h-8 w-8",
+        xs:      "h-6 px-2 text-xs",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
@@ -32,5 +32,4 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
   return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
 });
 Button.displayName = "Button";
-
 export { Button, buttonVariants };

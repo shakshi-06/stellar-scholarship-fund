@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useWallet } from "../context/WalletContext";
 import { Button } from "@/components/ui/button";
-import { Loader2, Building2, GraduationCap, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 
 export default function RoleSelect() {
   const { connect, isConnecting, walletError, freighterInstalled } = useWallet();
@@ -11,84 +11,108 @@ export default function RoleSelect() {
     {
       id: "provider",
       label: "Scholarship Provider",
-      description: "Create scholarship pools, review applications, and disburse funds to students.",
-      icon: Building2,
+      tag: "ADMIN",
+      description: "Create scholarship pools, review student applications, and disburse funds.",
     },
     {
       id: "student",
       label: "Student Applicant",
-      description: "Browse available scholarships, submit applications, and receive funding.",
-      icon: GraduationCap,
+      tag: "STUDENT",
+      description: "Browse available scholarships, apply, and receive funding to your wallet.",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col">
-      <header className="border-b border-stone-200 bg-white px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <span className="font-['Syne'] font-extrabold text-lg tracking-tight text-stone-900">ScholarChain</span>
-          <span className="text-xs font-bold bg-[#F2D94E] text-stone-900 px-2 py-0.5 rounded-full uppercase tracking-wider">Testnet</span>
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+      {/* subtle radial gradient background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#f2d94e]/3 rounded-full blur-[120px]" />
+      </div>
+
+      <header className="border-b border-[#1a1a1a] px-6 py-4 relative z-10">
+        <div className="max-w-5xl mx-auto flex items-center gap-2.5">
+          <span className="text-sm font-semibold text-white tracking-tight">ScholarChain</span>
+          <span className="text-[10px] font-mono bg-[#f2d94e]/10 text-[#f2d94e] border border-[#f2d94e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider">
+            Testnet
+          </span>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-2xl">
+      <main className="flex-1 flex items-center justify-center px-6 py-20 relative z-10">
+        <div className="w-full max-w-md">
+
           <div className="mb-10">
-            <h1 className="font-['Syne'] text-3xl font-extrabold text-stone-900 tracking-tight mb-3">
-              How are you using ScholarChain today?
+            <div className="text-xs font-mono text-[#444] uppercase tracking-widest mb-4">
+              SCHOLARCHAIN / CONNECT
+            </div>
+            <h1 className="text-2xl font-semibold text-white tracking-tight mb-2">
+              Select your role
             </h1>
-            <p className="text-stone-500 text-sm leading-relaxed">
-              Choose your role for this session. You can return and switch roles at any time.
+            <p className="text-sm text-[#666] leading-relaxed">
+              Choose how you are using ScholarChain for this session.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+          <div className="space-y-2 mb-6">
             {roles.map((role) => {
-              const Icon = role.icon;
               const isSelected = selected === role.id;
               return (
                 <button
                   key={role.id}
                   onClick={() => setSelected(role.id)}
-                  className={`text-left p-6 rounded-lg border-2 transition-all bg-white ${
-                    isSelected ? "border-stone-900 shadow-sm" : "border-stone-200 hover:border-stone-300"
+                  className={`w-full text-left px-5 py-4 rounded-xl border transition-all ${
+                    isSelected
+                      ? "border-[#f2d94e]/40 bg-[#f2d94e]/5"
+                      : "border-[#1e1e1e] bg-[#111] hover:border-[#2a2a2a] hover:bg-[#141414]"
                   }`}
                 >
-                  <div className={`w-10 h-10 rounded-md flex items-center justify-center mb-4 ${isSelected ? "bg-stone-900" : "bg-stone-100"}`}>
-                    <Icon className={`w-5 h-5 ${isSelected ? "text-white" : "text-stone-500"}`} />
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs font-mono tracking-widest ${isSelected ? "text-[#f2d94e]" : "text-[#444]"}`}>
+                      {role.tag}
+                    </span>
+                    {isSelected && (
+                      <span className="w-2 h-2 rounded-full bg-[#f2d94e]" />
+                    )}
                   </div>
-                  <div className="font-['Syne'] font-bold text-stone-900 mb-1.5">{role.label}</div>
-                  <p className="text-sm text-stone-500 leading-relaxed">{role.description}</p>
-                  {isSelected && (
-                    <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-stone-900">
-                      Selected <ArrowRight className="w-3 h-3" />
-                    </div>
-                  )}
+                  <div className={`text-sm font-semibold mb-1 ${isSelected ? "text-white" : "text-[#ccc]"}`}>
+                    {role.label}
+                  </div>
+                  <div className={`text-xs leading-relaxed ${isSelected ? "text-[#888]" : "text-[#444]"}`}>
+                    {role.description}
+                  </div>
                 </button>
               );
             })}
           </div>
 
           {walletError && (
-            <div className="mb-4 px-4 py-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
-              {walletError === "FREIGHTER_NOT_INSTALLED" && (<>Freighter not found. <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="underline font-medium">Install it here</a></>)}
+            <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-sm text-red-400">
+              {walletError === "FREIGHTER_NOT_INSTALLED" && (<>Freighter not found. <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="underline text-red-300">Install it</a></>)}
               {walletError === "USER_DECLINED" && "Connection cancelled."}
-              {walletError === "CONNECTION_FAILED" && "Could not connect. Please try again."}
+              {walletError === "CONNECTION_FAILED" && "Could not connect. Try again."}
             </div>
           )}
 
           {freighterInstalled === false && (
-            <div className="mb-4 px-4 py-3 rounded-md bg-[#FBF0A8] border border-[#e8d84a] text-sm text-stone-700">
-              Freighter wallet extension is required. <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="font-semibold underline">Install Freighter</a> and set it to Testnet.
+            <div className="mb-4 px-4 py-3 rounded-lg bg-[#f2d94e]/5 border border-[#f2d94e]/20 text-sm text-[#f2d94e]">
+              Freighter wallet required. <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="font-semibold underline">Install Freighter</a> and set it to Testnet.
             </div>
           )}
 
-          <Button className="w-full h-11 text-sm font-semibold" onClick={() => connect(selected)} disabled={!selected || isConnecting || freighterInstalled === false}>
-            {isConnecting ? (<><Loader2 className="w-4 h-4 animate-spin" /> Connecting Wallet</>) : (<>Connect Freighter Wallet <ArrowRight className="w-4 h-4" /></>)}
+          <Button
+            variant="default"
+            className="w-full h-10 font-semibold"
+            onClick={() => connect(selected)}
+            disabled={!selected || isConnecting || freighterInstalled === false}
+          >
+            {isConnecting
+              ? <><Loader2 className="w-4 h-4 animate-spin" /> Connecting</>
+              : <>Connect Freighter <ArrowRight className="w-4 h-4" /></>
+            }
           </Button>
 
-          <p className="text-center text-xs text-stone-400 mt-4">
-            All transactions are on Stellar Testnet. No real funds are used.
+          <p className="text-center text-xs text-[#333] mt-4 font-mono">
+            Stellar Testnet / No real funds used
           </p>
         </div>
       </main>

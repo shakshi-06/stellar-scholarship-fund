@@ -3,25 +3,23 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors",
+  "inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium font-mono",
   {
     variants: {
       variant: {
-        default: "border-transparent bg-stone-900 text-stone-50",
-        secondary: "border-transparent bg-stone-100 text-stone-900",
-        destructive: "border-transparent bg-red-500 text-white",
-        outline: "text-stone-900",
-        peach: "border-transparent bg-[#FDDEC9] text-[#c45c2a]",
-        yellow: "border-transparent bg-[#FBF0A8] text-[#7a6000]",
-        green: "border-transparent bg-green-100 text-green-800",
+        default:   "bg-white/10 text-white border border-white/10",
+        secondary: "bg-[#1a1a1a] text-[#888] border border-[#2a2a2a]",
+        yellow:    "bg-[#f2d94e]/15 text-[#f2d94e] border border-[#f2d94e]/30",
+        green:     "bg-green-500/10 text-green-400 border border-green-500/20",
+        red:       "bg-red-500/10 text-red-400 border border-red-500/20",
+        amber:     "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
       },
     },
-    defaultVariants: { variant: "default" },
+    defaultVariants: { variant: "secondary" },
   }
 );
 
 function Badge({ className, variant, ...props }) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
-
 export { Badge, badgeVariants };
