@@ -1,11 +1,14 @@
 import { useState } from "react";
-import ActivityStrip from "../components/ActivityStrip";
+import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
+import { useTheme } from "../context/ThemeContext";
+import Footer from "../components/Footer";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowRight, BookOpen, Wallet } from "lucide-react";
+import { Loader2, ArrowRight, BookOpen, Wallet, Sun, Moon } from "lucide-react";
 
 function ConnectModal({ role, onClose }) {
   const { connect, isConnecting, walletError, freighterInstalled } = useWallet();
+  const navigate = useNavigate();
 
   const config = {
     student: {
@@ -20,24 +23,27 @@ function ConnectModal({ role, onClose }) {
     },
   }[role];
 
+  const handleConnect = async () => {
+    await connect(role);
+    navigate(role === "student" ? "/student" : "/donor");
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-6"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-6"
+      onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-sm bg-[#111] border border-[#222] rounded-xl p-6">
+      <div className="w-full max-w-sm bg-[var(--surface)] border border-[var(--card-border)] rounded-xl p-6 shadow-2xl">
         <div className="mb-5">
-          <span className="text-xs font-mono text-[#f2d94e] uppercase tracking-widest">{config.tag}</span>
-          <h2 className="text-base font-semibold text-white mt-1.5 tracking-tight">{config.title}</h2>
-          <p className="text-sm text-[#666] mt-1 leading-relaxed">{config.desc}</p>
+          <span className="text-xs font-mono text-[var(--yellow)] uppercase tracking-widest">{config.tag}</span>
+          <h2 className="text-base font-semibold text-[var(--text)] mt-1.5 tracking-tight">{config.title}</h2>
+          <p className="text-sm text-[var(--text-muted)] mt-1 leading-relaxed">{config.desc}</p>
         </div>
 
         {freighterInstalled === false && (
-          <div className="mb-4 px-3 py-2.5 rounded-lg bg-[#f2d94e]/5 border border-[#f2d94e]/20 text-xs text-[#f2d94e]">
+          <div className="mb-4 px-3 py-2.5 rounded-lg bg-[var(--yellow-bg)] border border-[var(--yellow-border)] text-xs text-[var(--yellow)]">
             Freighter wallet required.{" "}
-            <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="underline font-semibold">
-              Install Freighter
-            </a>{" "}
+            <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="underline font-semibold">Install Freighter</a>{" "}
             and set it to Testnet.
           </div>
         )}
@@ -52,7 +58,7 @@ function ConnectModal({ role, onClose }) {
 
         <Button
           className="w-full h-10"
-          onClick={() => connect(role)}
+          onClick={handleConnect}
           disabled={isConnecting || freighterInstalled === false}
         >
           {isConnecting
@@ -61,15 +67,12 @@ function ConnectModal({ role, onClose }) {
           }
         </Button>
 
-        <button
-          onClick={onClose}
-          className="w-full mt-3 text-xs text-[#444] hover:text-[#888] transition-colors font-mono"
-        >
+        <button onClick={onClose} className="w-full mt-3 text-xs text-[var(--text-dim)] hover:text-[var(--text-muted)] transition-colors font-mono">
           Cancel
         </button>
 
-        <p className="text-center text-xs text-[#2a2a2a] mt-4 font-mono">
-          Stellar Testnet / No real funds
+        <p className="text-center text-xs text-[var(--border-2)] mt-4 font-mono">
+          Stellar Testnet / No real funds used
         </p>
       </div>
     </div>
@@ -83,7 +86,7 @@ const HOW_IT_WORKS = {
     { step: "03", title: "Receive Funds", desc: "Donors browse requests and send XLM directly to your wallet. No middlemen, no waiting." },
   ],
   donor: [
-    { step: "01", title: "Connect Wallet", desc: "Connect your Freighter wallet. Make sure you have test XLM — use the Friendbot if needed." },
+    { step: "01", title: "Connect Wallet", desc: "Connect your Freighter wallet. Make sure you have test XLM — use Get Test XLM if needed." },
     { step: "02", title: "Browse Requests", desc: "Read student funding requests. Filter by field, sort by urgency, search by keyword." },
     { step: "03", title: "Send XLM", desc: "Pick who you want to support, enter an amount, and sign with Freighter. Funds arrive in seconds." },
   ],
@@ -91,50 +94,55 @@ const HOW_IT_WORKS = {
 
 export default function Landing() {
   const [connectRole, setConnectRole] = useState(null);
+  const { theme, toggle } = useTheme();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Subtle background glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-[#f2d94e]/4 rounded-full blur-[140px]" />
-        <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] bg-white/[0.015] rounded-full blur-[120px]" />
-      </div>
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
+      {/* Background glow — only in dark mode */}
+      {theme === "dark" && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-[#f2d94e]/3 rounded-full blur-[140px]" />
+        </div>
+      )}
 
       {/* Navbar */}
-      <header className="relative z-10 border-b border-[#1a1a1a]">
+      <header className="relative z-10 border-b border-[var(--border)] bg-[var(--nav-bg)] backdrop-blur-md">
         <div className="max-w-5xl mx-auto px-6 h-12 flex items-center gap-3">
-          <span className="text-sm font-semibold tracking-tight text-white">ScholarChain</span>
-          <span className="text-[10px] font-mono bg-[#f2d94e]/10 text-[#f2d94e] border border-[#f2d94e]/20 px-1.5 py-0.5 rounded uppercase tracking-wider">
+          <span className="text-sm font-semibold tracking-tight text-[var(--text)]">ScholarChain</span>
+          <span className="text-[10px] font-mono bg-[var(--yellow-bg)] text-[var(--yellow)] border border-[var(--yellow-border)] px-1.5 py-0.5 rounded uppercase tracking-wider">
             Testnet
           </span>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-4">
             <button
               onClick={() => setConnectRole("student")}
-              className="text-xs text-[#666] hover:text-white transition-colors font-mono"
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors font-mono"
             >
               Student
             </button>
             <button
               onClick={() => setConnectRole("donor")}
-              className="text-xs text-[#666] hover:text-white transition-colors font-mono"
+              className="text-xs text-[var(--text-muted)] hover:text-[var(--text)] transition-colors font-mono"
             >
               Donor
+            </button>
+            <button onClick={toggle} className="text-[var(--text-dim)] hover:text-[var(--text)] transition-colors">
+              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
             </button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 pt-24 pb-20">
+      <section className="relative z-10 flex-1 max-w-5xl mx-auto w-full px-6 pt-24 pb-20">
         <div className="max-w-2xl">
-          <div className="text-xs font-mono text-[#444] uppercase tracking-widest mb-6">
+          <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-6">
             Built on Stellar Testnet
           </div>
-          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.1] mb-6">
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.1] mb-6 text-[var(--text)]">
             Fund education.<br />
-            <span className="text-[#f2d94e]">Directly on-chain.</span>
+            <span className="text-[var(--yellow)]">Directly on-chain.</span>
           </h1>
-          <p className="text-[#666] text-base leading-relaxed mb-10 max-w-lg">
+          <p className="text-[var(--text-muted)] text-base leading-relaxed mb-10 max-w-lg">
             Students post funding requests. Donors send XLM directly to student wallets.
             Every transaction is permanent, public, and verifiable on Stellar.
           </p>
@@ -142,69 +150,61 @@ export default function Landing() {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => setConnectRole("student")}
-              className="flex items-center justify-center gap-2.5 h-11 px-6 bg-white text-black text-sm font-semibold rounded-md hover:bg-neutral-200 transition-colors"
+              className="flex items-center justify-center gap-2.5 h-11 px-6 bg-[var(--text)] text-[var(--bg)] text-sm font-semibold rounded-md hover:opacity-80 transition-opacity"
             >
-              <BookOpen className="w-4 h-4" />
-              I need funding
+              <BookOpen className="w-4 h-4" /> I need funding
             </button>
             <button
               onClick={() => setConnectRole("donor")}
-              className="flex items-center justify-center gap-2.5 h-11 px-6 border border-[#2a2a2a] bg-transparent text-white text-sm font-semibold rounded-md hover:border-[#444] hover:bg-[#1a1a1a] transition-colors"
+              className="flex items-center justify-center gap-2.5 h-11 px-6 border border-[var(--border-2)] bg-transparent text-[var(--text)] text-sm font-semibold rounded-md hover:bg-[var(--surface-2)] transition-colors"
             >
-              <Wallet className="w-4 h-4" />
-              I want to donate
+              <Wallet className="w-4 h-4" /> I want to donate
             </button>
           </div>
         </div>
       </section>
 
       {/* Stats bar */}
-      <section className="relative z-10 border-y border-[#1a1a1a] bg-[#0d0d0d]">
-        <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3 divide-x divide-[#1a1a1a]">
+      <section className="relative z-10 border-y border-[var(--border)] bg-[var(--surface)]">
+        <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3 divide-x divide-[var(--border)]">
           {[
             { label: "Network", value: "Stellar Testnet" },
             { label: "Finality", value: "~5 seconds" },
             { label: "Transaction fee", value: "< $0.001" },
           ].map(s => (
             <div key={s.label} className="px-6 first:pl-0 last:pr-0 text-center sm:text-left">
-              <div className="text-xs font-mono text-[#444] uppercase tracking-widest mb-1">{s.label}</div>
-              <div className="text-sm font-semibold text-white">{s.value}</div>
+              <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">{s.label}</div>
+              <div className="text-sm font-semibold text-[var(--text)]">{s.value}</div>
             </div>
           ))}
         </div>
       </section>
 
-      <ActivityStrip />
-
       {/* How it works */}
-      <section className="relative z-10 max-w-5xl mx-auto px-6 py-20" id="how">
-        <div className="text-xs font-mono text-[#444] uppercase tracking-widest mb-3">
-          How it works
-        </div>
-        <h2 className="text-2xl font-semibold tracking-tight mb-12">
-          Two roles. One platform.
-        </h2>
+      <section className="relative z-10 max-w-5xl mx-auto px-6 py-20">
+        <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-3">How it works</div>
+        <h2 className="text-2xl font-semibold tracking-tight mb-12 text-[var(--text)]">Two roles. One platform.</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {["student", "donor"].map(roleKey => (
-            <div key={roleKey} className="bg-[#0d0d0d] border border-[#1e1e1e] rounded-xl p-6">
-              <div className="text-xs font-mono text-[#f2d94e] uppercase tracking-widest mb-4">
+            <div key={roleKey} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-6">
+              <div className="text-xs font-mono text-[var(--yellow)] uppercase tracking-widest mb-5">
                 {roleKey === "student" ? "For Students" : "For Donors"}
               </div>
               <div className="space-y-5">
                 {HOW_IT_WORKS[roleKey].map(item => (
                   <div key={item.step} className="flex gap-4">
-                    <div className="text-xs font-mono text-[#333] w-6 flex-shrink-0 pt-0.5">{item.step}</div>
+                    <div className="text-xs font-mono text-[var(--text-dim)] w-6 flex-shrink-0 pt-0.5">{item.step}</div>
                     <div>
-                      <div className="text-sm font-semibold text-white mb-1">{item.title}</div>
-                      <div className="text-xs text-[#555] leading-relaxed">{item.desc}</div>
+                      <div className="text-sm font-semibold text-[var(--text)] mb-1">{item.title}</div>
+                      <div className="text-xs text-[var(--text-muted)] leading-relaxed">{item.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
               <button
                 onClick={() => setConnectRole(roleKey)}
-                className="mt-6 w-full h-9 border border-[#2a2a2a] text-xs text-[#888] font-mono rounded-md hover:border-[#f2d94e]/40 hover:text-[#f2d94e] transition-colors"
+                className="mt-6 w-full h-9 border border-[var(--border-2)] text-xs text-[var(--text-muted)] font-mono rounded-md hover:border-[var(--yellow-border)] hover:text-[var(--yellow)] transition-colors"
               >
                 {roleKey === "student" ? "Post a request" : "Browse requests"} →
               </button>
@@ -213,24 +213,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-[#1a1a1a] py-6">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">ScholarChain</span>
-            <span className="text-xs text-[#333] font-mono">/ Stellar Testnet</span>
-          </div>
-          <div className="flex items-center gap-4 text-xs font-mono text-[#333]">
-            <a href="https://stellar.org" target="_blank" rel="noreferrer" className="hover:text-[#888] transition-colors">stellar.org</a>
-            <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noreferrer" className="hover:text-[#888] transition-colors">Explorer</a>
-            <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="hover:text-[#888] transition-colors">Freighter</a>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
-      {connectRole && (
-        <ConnectModal role={connectRole} onClose={() => setConnectRole(null)} />
-      )}
+      {connectRole && <ConnectModal role={connectRole} onClose={() => setConnectRole(null)} />}
     </div>
   );
 }
