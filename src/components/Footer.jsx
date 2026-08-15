@@ -1,18 +1,17 @@
 export default function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-inner">
-        <div className="footer-brand">
-          <span className="brand-name">ScholarChain</span>
+    <footer className="border-t border-[var(--border)] bg-[var(--footer-bg)]">
+      <div className="max-w-5xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-[var(--text)]">ScholarChain</span>
+          <span className="text-xs font-mono text-[var(--text-dim)]">/ Stellar Testnet</span>
         </div>
-        <p className="footer-note">
-          Built on Stellar Testnet ·{" "}
-          <a href="https://stellar.org" target="_blank" rel="noreferrer">stellar.org</a> ·{" "}
-          <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noreferrer">Explorer</a>
-        </p>
-        <p className="footer-disclaimer">
-          Demo dApp for Stellar Journey to Mastery. All transactions are on Testnet.
-        </p>
+        <div className="flex items-center gap-5 text-xs font-mono text-[var(--text-dim)]">
+          <a href="https://stellar.org" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">stellar.org</a>
+          <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">Explorer</a>
+          <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="hover:text-[var(--text)] transition-colors">Freighter</a>
+        </div>
+        <p className="text-xs text-[var(--text-dim)] font-mono">All transactions on Testnet</p>
       </div>
     </footer>
   );
