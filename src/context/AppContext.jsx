@@ -1,143 +1,149 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import {
+  isContractDeployed,
+  contractGetAllRequests,
+  contractPostRequest,
+  contractRecordDonation,
+  contractIsFunded,
+} from "../utils/contract";
 
-// SC-FUND memo used on all donation transactions
-// This lets us detect ScholarChain payments on Horizon
 export const SC_MEMO = "SC-FUND";
 
-// localStorage keys — BUG FIX: previously all app state (requests, donations,
-// feedback) lived only in React state and was wiped on every refresh/tab close.
-// That made it impossible to onboard real users or collect durable feedback.
-const LS_REQUESTS = "scfund_requests";
+const LS_REQUESTS  = "scfund_requests";
 const LS_DONATIONS = "scfund_donations";
-const LS_FEED = "scfund_activity_feed";
-const LS_FEEDBACK = "scfund_feedback";
+const LS_FEED      = "scfund_feed";
 
-const loadLS = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
+const loadLS = (key, fb) => {
+  try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; }
+  catch { return fb; }
+};
+const saveLS = (key, val) => {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
 };
 
 const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
-  // Requests posted by students
-  const [requests, setRequests] = useState(() => loadLS(LS_REQUESTS, []));
-  // Donations made by donors { requestId, amount, txHash, from, to, time }
-  const [donations, setDonations] = useState(() => loadLS(LS_DONATIONS, []));
-  // Activity feed entries
-  const [activityFeed, setActivityFeed] = useState(() => loadLS(LS_FEED, []));
-  // User feedback submissions { name, rating, comment, time }
-  const [feedback, setFeedback] = useState(() => loadLS(LS_FEEDBACK, []));
+  const [requests, setRequests]     = useState(() => loadLS(LS_REQUESTS, []));
+  const [donations, setDonations]   = useState(() => loadLS(LS_DONATIONS, []));
+  const [activityFeed, setFeed]     = useState(() => loadLS(LS_FEED, []));
+  const [contractLoading, setLoading] = useState(false);
+  const [usingContract, setUsingContract] = useState(false);
 
-  // Persist to localStorage whenever state changes
+  // On mount: if contract is deployed, load from chain
   useEffect(() => {
-    try { localStorage.setItem(LS_REQUESTS, JSON.stringify(requests)); } catch {}
-  }, [requests]);
-  useEffect(() => {
-    try { localStorage.setItem(LS_DONATIONS, JSON.stringify(donations)); } catch {}
-  }, [donations]);
-  useEffect(() => {
-    try { localStorage.setItem(LS_FEED, JSON.stringify(activityFeed)); } catch {}
-  }, [activityFeed]);
-  useEffect(() => {
-    try { localStorage.setItem(LS_FEEDBACK, JSON.stringify(feedback)); } catch {}
-  }, [feedback]);
-
-  const addFeedback = useCallback((entry) => {
-    const newEntry = { ...entry, id: Date.now(), time: new Date().toISOString() };
-    setFeedback(prev => [newEntry, ...prev]);
-    return newEntry;
+    if (!isContractDeployed()) return;
+    setLoading(true);
+    contractGetAllRequests()
+      .then(onChain => {
+        if (onChain?.length > 0) {
+          setRequests(onChain);
+          saveLS(LS_REQUESTS, onChain);
+        }
+        setUsingContract(true);
+      })
+      .catch(e => console.error("Contract load failed, using localStorage:", e))
+      .finally(() => setLoading(false));
   }, []);
 
-  const addActivity = useCallback((message) => {
-    setActivityFeed(prev => [
-      { id: Date.now(), message, time: new Date().toISOString() },
-      ...prev.slice(0, 29),
-    ]);
+  // Persist to localStorage on every change
+  useEffect(() => { saveLS(LS_REQUESTS,  requests);    }, [requests]);
+  useEffect(() => { saveLS(LS_DONATIONS, donations);   }, [donations]);
+  useEffect(() => { saveLS(LS_FEED,      activityFeed);}, [activityFeed]);
+
+  const addActivity = useCallback((msg) => {
+    setFeed(prev => [{ id: Date.now(), message: msg, time: new Date().toISOString() }, ...prev.slice(0, 29)]);
   }, []);
 
-  // Student posts a new funding request
-  const postRequest = useCallback((request) => {
+  // Student posts a request — optimistic update + on-chain write
+  const postRequest = useCallback(async (publicKey, data) => {
     const now = Date.now();
-    const expiresAt = now + request.durationDays * 24 * 60 * 60 * 1000;
-    const newRequest = {
-      ...request,
+    const optimistic = {
+      ...data,
       id: now,
       raised: 0,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(expiresAt).toISOString(),
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + data.durationDays * 86400000).toISOString(),
       donorCount: 0,
+      isActive: true,
+      studentWallet: publicKey,
     };
-    setRequests(prev => [newRequest, ...prev]);
-    addActivity(`New request posted: ${request.purpose}`);
-    return newRequest;
+    setRequests(prev => [optimistic, ...prev]);
+    addActivity(`New request: ${data.purpose}`);
+
+    if (isContractDeployed()) {
+      try {
+        await contractPostRequest(publicKey, data);
+        // Reload from chain to get real ledger timestamps
+        const onChain = await contractGetAllRequests();
+        if (onChain?.length > 0) {
+          setRequests(onChain);
+          saveLS(LS_REQUESTS, onChain);
+        }
+      } catch (e) {
+        console.error("On-chain post failed, keeping local copy:", e);
+      }
+    }
+    return optimistic;
   }, [addActivity]);
 
-  // Donor funds a student request
-  const recordFunding = useCallback((requestId, amount, txHash, fromWallet) => {
+  // Donor records funding — optimistic update + on-chain write
+  const recordFunding = useCallback(async (publicKey, requestId, amountXLM, txHash) => {
     setRequests(prev => prev.map(r =>
-      r.id === requestId
-        ? { ...r, raised: r.raised + amount, donorCount: r.donorCount + 1 }
-        : r
+      r.id === requestId ? { ...r, raised: r.raised + amountXLM, donorCount: r.donorCount + 1 } : r
     ));
-    const entry = {
-      id: Date.now(),
-      requestId,
-      amount,
-      txHash,
-      from: fromWallet,
-      time: new Date().toISOString(),
-    };
+    const entry = { id: Date.now(), requestId, amount: amountXLM, txHash, from: publicKey, time: new Date().toISOString() };
     setDonations(prev => [entry, ...prev]);
-    addActivity(`${amount} XLM funded — Tx: ${txHash?.slice(0, 8)}...`);
+    addActivity(`${amountXLM} XLM funded — Tx: ${txHash?.slice(0, 8)}...`);
+
+    if (isContractDeployed()) {
+      try {
+        await contractRecordDonation(publicKey, requestId, amountXLM);
+        const onChain = await contractGetAllRequests();
+        if (onChain?.length > 0) { setRequests(onChain); saveLS(LS_REQUESTS, onChain); }
+      } catch (e) { console.error("On-chain record failed:", e); }
+    }
+    return entry;
   }, [addActivity]);
 
-  // Check if a request is expired
-  const isExpired = useCallback((request) => {
-    return new Date(request.expiresAt) < new Date();
+  const checkPreviouslyFunded = useCallback(async (wallet) => {
+    if (isContractDeployed()) {
+      try { return await contractIsFunded(wallet); } catch {}
+    }
+    return donations.some(d => {
+      const req = requests.find(r => r.id === d.requestId);
+      return req?.studentWallet === wallet && req?.raised >= req?.goalXLM;
+    });
+  }, [donations, requests]);
+
+  const isExpired = useCallback((r) => new Date(r.expiresAt) < new Date(), []);
+
+  const activeRequests  = requests.filter(r => r.isActive !== false && !isExpired(r));
+  const expiredRequests = requests.filter(r => r.isActive === false || isExpired(r));
+
+  const getDonationsByWallet  = useCallback((w) => donations.filter(d => d.from === w), [donations]);
+  const getRequestsByWallet   = useCallback((w) => requests.filter(r => r.studentWallet === w), [requests]);
+  const getDonationsForRequest= useCallback((id) => donations.filter(d => d.requestId === id), [donations]);
+
+  const refreshFromContract = useCallback(async () => {
+    if (!isContractDeployed()) return;
+    setLoading(true);
+    try {
+      const onChain = await contractGetAllRequests();
+      if (onChain?.length > 0) { setRequests(onChain); saveLS(LS_REQUESTS, onChain); }
+    } catch {}
+    finally { setLoading(false); }
   }, []);
-
-  // Get active (non-expired) requests
-  const activeRequests = requests.filter(r => !isExpired(r));
-
-  // Get expired requests
-  const expiredRequests = requests.filter(r => isExpired(r));
-
-  // Get donations for a specific request
-  const getDonationsForRequest = useCallback((requestId) => {
-    return donations.filter(d => d.requestId === requestId);
-  }, [donations]);
-
-  // Get donations made by a specific wallet
-  const getDonationsByWallet = useCallback((wallet) => {
-    return donations.filter(d => d.from === wallet);
-  }, [donations]);
-
-  // Get requests posted by a specific wallet
-  const getRequestsByWallet = useCallback((wallet) => {
-    return requests.filter(r => r.studentWallet === wallet);
-  }, [requests]);
 
   return (
     <AppContext.Provider value={{
-      requests,
-      activeRequests,
-      expiredRequests,
-      donations,
-      activityFeed,
-      feedback,
-      addFeedback,
-      postRequest,
-      recordFunding,
-      isExpired,
-      getDonationsForRequest,
-      getDonationsByWallet,
-      getRequestsByWallet,
-      SC_MEMO,
+      requests, activeRequests, expiredRequests,
+      donations, activityFeed,
+      contractLoading, usingContract, SC_MEMO,
+      postRequest, recordFunding,
+      checkPreviouslyFunded, isExpired,
+      getDonationsByWallet, getRequestsByWallet, getDonationsForRequest,
+      refreshFromContract,
     }}>
       {children}
     </AppContext.Provider>

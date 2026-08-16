@@ -8,12 +8,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:  "bg-white text-black text-sm hover:bg-neutral-200",
-        outline:  "border border-[#2a2a2a] bg-transparent text-[#f5f5f5] text-sm hover:border-[#444] hover:bg-[#1a1a1a]",
-        ghost:    "text-[#888] text-sm hover:text-white hover:bg-[#1a1a1a]",
-        yellow:   "bg-[#f2d94e] text-black text-sm font-semibold hover:bg-[#e8cf3a]",
-        danger:   "bg-[#ef4444] text-white text-sm hover:bg-[#dc2626]",
-        surface:  "bg-[#1a1a1a] border border-[#2a2a2a] text-[#f5f5f5] text-sm hover:bg-[#222] hover:border-[#333]",
+        default:  "bg-[var(--text)] text-[var(--bg)] text-sm hover:opacity-80",
+        outline:  "border border-[var(--border-2)] bg-transparent text-[var(--text)] text-sm hover:border-[var(--text-dim)] hover:bg-[var(--surface-2)]",
+        ghost:    "text-[var(--text-muted)] text-sm hover:text-[var(--text)] hover:bg-[var(--surface-2)]",
+        yellow:   "bg-[var(--yellow)] text-black text-sm font-semibold hover:opacity-85",
+        danger:   "bg-red-600 text-white text-sm hover:bg-red-700",
+        surface:  "bg-[var(--surface-2)] border border-[var(--border-2)] text-[var(--text)] text-sm hover:opacity-80",
       },
       size: {
         default: "h-9 px-4 py-2",
