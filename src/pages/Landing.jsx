@@ -125,8 +125,8 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 flex-1 w-full">
-        <div className="max-w-5xl mx-auto px-6 pt-24 pb-20">
+      <section className="relative z-10 flex-1 w-full px-6">
+        <div className="max-w-5xl mx-auto pt-24 pb-20">
           <div className="max-w-2xl">
             <div className="text-xs font-mono uppercase tracking-widest mb-6" style={{ color: "var(--text-dim)" }}>
               Built on Stellar Testnet
@@ -163,7 +163,7 @@ export default function Landing() {
 
       {/* Stats bar */}
       <section className="relative z-10 border-y" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-        <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3 divide-x" style={{ "--tw-divide-opacity": 1 }}>
+        <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
           {[
             { label: "Network", value: "Stellar Testnet" },
             { label: "Finality", value: "~5 seconds" },
@@ -182,8 +182,8 @@ export default function Landing() {
       <ActivityStrip />
 
       {/* How it works */}
-      <section className="relative z-10">
-        <div className="max-w-5xl mx-auto px-6 py-20">
+      <section className="relative z-10 px-6">
+        <div className="max-w-5xl mx-auto py-20">
           <div className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-dim)" }}>How it works</div>
           <h2 className="text-2xl font-semibold tracking-tight mb-12" style={{ color: "var(--text)" }}>Two roles. One platform.</h2>
 
