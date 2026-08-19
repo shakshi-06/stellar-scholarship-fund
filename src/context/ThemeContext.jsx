@@ -9,7 +9,13 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    // Set on <html> element so html[data-theme="light"] CSS selector works
+    const html = document.documentElement;
+    if (theme === "light") {
+      html.setAttribute("data-theme", "light");
+    } else {
+      html.removeAttribute("data-theme");
+    }
     try { localStorage.setItem("sc_theme", theme); } catch {}
   }, [theme]);
 

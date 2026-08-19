@@ -17,7 +17,7 @@ function ProtectedRoute({ children, requiredRole }) {
 
 function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-[var(--bg)] flex flex-col transition-colors duration-200">
+    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)", color: "var(--text)", transition: "background 0.2s, color 0.2s" }}>
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
@@ -27,33 +27,11 @@ function Layout({ children }) {
 
 function AppRoutes() {
   const { publicKey, role } = useWallet();
-
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          publicKey && role
-            ? <Navigate to={role === "student" ? "/student" : "/donor"} replace />
-            : <Landing />
-        }
-      />
-      <Route
-        path="/student"
-        element={
-          <ProtectedRoute requiredRole="student">
-            <Layout><StudentPortal /></Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/donor"
-        element={
-          <ProtectedRoute requiredRole="donor">
-            <Layout><DonorPortal /></Layout>
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/" element={publicKey && role ? <Navigate to={role === "student" ? "/student" : "/donor"} replace /> : <Landing />} />
+      <Route path="/student" element={<ProtectedRoute requiredRole="student"><Layout><StudentPortal /></Layout></ProtectedRoute>} />
+      <Route path="/donor" element={<ProtectedRoute requiredRole="donor"><Layout><DonorPortal /></Layout></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
