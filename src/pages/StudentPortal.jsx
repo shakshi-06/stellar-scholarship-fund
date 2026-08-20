@@ -1,191 +1,180 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import { useApp } from "../context/AppContext";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import CopyHash from "../components/CopyHash";
 import { formatXLM, shortAddress, server } from "../utils/stellar";
 import { CheckCircle2, Clock, ExternalLink, Loader2, Plus, AlertCircle, ArrowDownLeft } from "lucide-react";
 
-const FIELDS = ["Computer Science","Engineering","Medicine","Design","Physics","Law","Arts","Commerce","Other"];
+/* ── Shared inline style tokens ─────────────────────────── */
+const card   = { background:"var(--card-bg)", border:"1px solid var(--card-border)", borderRadius:12, padding:20 };
+const label  = { fontSize:10, fontFamily:"monospace", color:"var(--text-dim)", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:4, display:"block" };
+const mono   = { fontFamily:"monospace", fontSize:12, color:"var(--text-muted)", wordBreak:"break-all" };
+const input  = { width:"100%", height:36, border:"1px solid var(--border-2)", background:"var(--input-bg)", borderRadius:8, padding:"0 12px", fontSize:13, fontFamily:"monospace", color:"var(--text)", outline:"none", boxSizing:"border-box" };
+const select = { ...input, cursor:"pointer" };
+const btnPrimary = { display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, height:36, padding:"0 16px", fontSize:13, fontWeight:600, background:"var(--text)", color:"var(--bg)", border:"none", borderRadius:8, cursor:"pointer" };
+const btnOutline = { ...btnPrimary, background:"transparent", color:"var(--text)", border:"1px solid var(--border-2)" };
+const tag    = { fontSize:10, fontFamily:"monospace", color:"var(--text-dim)", textTransform:"uppercase", letterSpacing:"0.1em" };
+
+const FIELDS   = ["Computer Science","Engineering","Medicine","Design","Physics","Law","Arts","Commerce","Other"];
 const DURATIONS = [7, 14, 30];
 
-function timeLeft(expiresAt) {
-  const diff = new Date(expiresAt).getTime() - Date.now();
-  if (diff <= 0) return "Expired";
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  if (days > 0) return `${days}d ${hours}h left`;
-  const mins = Math.floor((diff % 3600000) / 60000);
-  return `${hours}h ${mins}m left`;
+function timeLeft(exp) {
+  const d = new Date(exp).getTime() - Date.now();
+  if (d <= 0) return "Expired";
+  const days = Math.floor(d/86400000), hrs = Math.floor((d%86400000)/3600000);
+  if (days > 0) return `${days}d ${hrs}h left`;
+  return `${hrs}h ${Math.floor((d%3600000)/60000)}m left`;
+}
+function timeAgo(s) {
+  const d = Math.floor((Date.now()-new Date(s).getTime())/1000);
+  if (d<60) return `${d}s ago`;
+  if (d<3600) return `${Math.floor(d/60)}m ago`;
+  if (d<86400) return `${Math.floor(d/3600)}h ago`;
+  return `${Math.floor(d/86400)}d ago`;
 }
 
-function timeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+function Badge({ text, color="#888", bg="rgba(255,255,255,0.05)", border="rgba(255,255,255,0.1)" }) {
+  return <span style={{ fontSize:11, fontFamily:"monospace", fontWeight:500, color, background:bg, border:`1px solid ${border}`, borderRadius:4, padding:"2px 7px", display:"inline-flex", alignItems:"center", gap:4 }}>{text}</span>;
 }
 
-function PostRequestDialog({ open, onClose, onPosted }) {
+function PostDialog({ open, onClose, onPosted }) {
   const { publicKey } = useWallet();
-  const [form, setForm] = useState({ purpose:"", field:"", location:"", description:"", goalXLM:"", durationDays:14 });
+  const [f, setF] = useState({ purpose:"", field:"", location:"", description:"", goalXLM:"", durationDays:14 });
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErr("");
-    if (parseFloat(form.goalXLM) < 1) { setErr("Goal must be at least 1 XLM."); return; }
+  const submit = async (e) => {
+    e.preventDefault(); setErr("");
+    if (parseFloat(f.goalXLM) < 1) { setErr("Goal must be at least 1 XLM."); return; }
     setLoading(true);
-    try {
-      await onPosted({ ...form, goalXLM: parseFloat(form.goalXLM) });
-      setDone(true);
-    } catch (e) {
-      setErr(e.message === "CONTRACT_NOT_DEPLOYED" ? "Saved locally — contract not deployed yet." : "Failed to post. Try again.");
-      setDone(true); // still saved locally
-    }
+    try { await onPosted({ ...f, goalXLM: parseFloat(f.goalXLM) }); setDone(true); }
+    catch { setErr("Failed to post. Please try again."); }
     setLoading(false);
   };
+  const close = () => { setDone(false); setF({ purpose:"",field:"",location:"",description:"",goalXLM:"",durationDays:14 }); setErr(""); onClose(); };
 
-  const handleClose = () => { setDone(false); setForm({ purpose:"",field:"",location:"",description:"",goalXLM:"",durationDays:14 }); setErr(""); onClose(); };
-
+  if (!open) return null;
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Post a Funding Request</DialogTitle>
-          <DialogDescription>Describe what you need funding for. Donors will read this and decide to support you.</DialogDescription>
-        </DialogHeader>
+    <div style={{ position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,0.65)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24 }} onClick={e=>e.target===e.currentTarget&&close()}>
+      <div style={{ width:"100%",maxWidth:480,background:"var(--surface)",border:"1px solid var(--card-border)",borderRadius:12,padding:24,boxShadow:"0 25px 50px rgba(0,0,0,0.5)",maxHeight:"90vh",overflowY:"auto" }}>
+        <h2 style={{ fontSize:15,fontWeight:600,color:"var(--text)",marginBottom:4 }}>Post a Funding Request</h2>
+        <p style={{ fontSize:13,color:"var(--text-muted)",marginBottom:20 }}>Describe what you need funding for. Donors will read this and decide to support you.</p>
         {done ? (
-          <div className="py-2 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-green-500">
-              <CheckCircle2 className="w-4 h-4" /> Request posted successfully
-            </div>
-            <p className="text-sm text-[var(--text-muted)]">Your request is now live. Donors can browse and send XLM directly to your wallet.</p>
-            <Button className="w-full" onClick={handleClose}>Done</Button>
+          <div>
+            <div style={{ display:"flex",alignItems:"center",gap:8,fontSize:14,fontWeight:600,color:"#4ade80",marginBottom:12 }}><CheckCircle2 size={16}/>Request posted successfully</div>
+            <p style={{ fontSize:13,color:"var(--text-muted)",marginBottom:16 }}>Your request is now live. Donors can browse and send XLM directly to your wallet.</p>
+            <button style={btnPrimary} onClick={close}>Done</button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Purpose of funding</Label>
-              <Input placeholder="e.g. Laptop for B.Tech final year project" value={form.purpose} onChange={e => setForm(p=>({...p,purpose:e.target.value}))} required />
-              <p className="text-xs text-[var(--text-dim)]">This becomes the title of your request. Be specific.</p>
+          <form onSubmit={submit}>
+            <div style={{ marginBottom:14 }}>
+              <label style={label}>Purpose of funding</label>
+              <input style={input} placeholder="e.g. Laptop for B.Tech final year project" value={f.purpose} onChange={e=>setF(p=>({...p,purpose:e.target.value}))} required />
+              <span style={{ fontSize:11,color:"var(--text-dim)",marginTop:4,display:"block" }}>This becomes the title. Be specific.</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Field of Study</Label>
-                <select
-                  className="flex h-9 w-full rounded-md border border-[var(--border-2)] bg-[var(--input-bg)] px-3 py-2 text-sm text-[var(--text)] focus-visible:outline-none focus-visible:border-[var(--text-dim)]"
-                  value={form.field} onChange={e => setForm(p=>({...p,field:e.target.value}))} required
-                >
-                  <option value="">Select field</option>
-                  {FIELDS.map(f => <option key={f} value={f}>{f}</option>)}
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14 }}>
+              <div>
+                <label style={label}>Field of Study</label>
+                <select style={select} value={f.field} onChange={e=>setF(p=>({...p,field:e.target.value}))} required>
+                  <option value="">Select</option>
+                  {FIELDS.map(x=><option key={x} value={x}>{x}</option>)}
                 </select>
               </div>
-              <div className="space-y-1.5">
-                <Label>Location</Label>
-                <Input placeholder="City, State" value={form.location} onChange={e => setForm(p=>({...p,location:e.target.value}))} required />
+              <div>
+                <label style={label}>Location</label>
+                <input style={input} placeholder="City, State" value={f.location} onChange={e=>setF(p=>({...p,location:e.target.value}))} required />
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Tell donors your story</Label>
-              <Input placeholder="Why do you need this? What will it help you achieve?" maxLength={300} value={form.description} onChange={e => setForm(p=>({...p,description:e.target.value}))} required />
-              <p className="text-xs text-[var(--text-dim)]">{form.description.length}/300</p>
+            <div style={{ marginBottom:14 }}>
+              <label style={label}>Your story</label>
+              <input style={input} placeholder="Why do you need this? What will it help you achieve?" maxLength={300} value={f.description} onChange={e=>setF(p=>({...p,description:e.target.value}))} required />
+              <span style={{ fontSize:11,color:"var(--text-dim)",marginTop:4,display:"block" }}>{f.description.length}/300</span>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Goal Amount (XLM)</Label>
-                <Input type="number" min="1" placeholder="e.g. 500" value={form.goalXLM} onChange={e => setForm(p=>({...p,goalXLM:e.target.value}))} required />
+            <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14 }}>
+              <div>
+                <label style={label}>Goal (XLM)</label>
+                <input style={input} type="number" min="1" placeholder="e.g. 500" value={f.goalXLM} onChange={e=>setF(p=>({...p,goalXLM:e.target.value}))} required />
               </div>
-              <div className="space-y-1.5">
-                <Label>Duration</Label>
-                <div className="flex gap-1.5">
-                  {DURATIONS.map(d => (
-                    <button key={d} type="button" onClick={() => setForm(p=>({...p,durationDays:d}))}
-                      className={`flex-1 h-9 text-xs font-mono rounded border transition-all ${form.durationDays===d ? "border-[var(--yellow-border)] bg-[var(--yellow-bg)] text-[var(--yellow)]" : "border-[var(--border-2)] text-[var(--text-dim)] hover:border-[var(--text-dim)]"}`}>
+              <div>
+                <label style={label}>Duration</label>
+                <div style={{ display:"flex",gap:6 }}>
+                  {DURATIONS.map(d=>(
+                    <button key={d} type="button" onClick={()=>setF(p=>({...p,durationDays:d}))}
+                      style={{ flex:1,height:36,fontSize:12,fontFamily:"monospace",borderRadius:8,cursor:"pointer",border:`1px solid ${f.durationDays===d?"var(--yellow-border)":"var(--border-2)"}`,background:f.durationDays===d?"var(--yellow-bg)":"transparent",color:f.durationDays===d?"var(--yellow)":"var(--text-dim)" }}>
                       {d}d
                     </button>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="bg-[var(--bg)] rounded-lg p-3 border border-[var(--border)]">
-              <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">Receiving Wallet</div>
-              <div className="font-mono text-xs text-[var(--text-muted)] break-all">{publicKey}</div>
-              <p className="text-xs text-[var(--text-dim)] mt-1">Donors send XLM directly to this address.</p>
+            <div style={{ background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginBottom:14 }}>
+              <span style={label}>Receiving Wallet</span>
+              <div style={{ ...mono,fontSize:11 }}>{publicKey}</div>
+              <span style={{ fontSize:11,color:"var(--text-dim)",marginTop:4,display:"block" }}>Donors send XLM directly to this address.</span>
             </div>
-            {err && <p className="text-xs text-red-500">{err}</p>}
-            <div className="flex gap-2 pt-1">
-              <Button type="button" variant="outline" className="flex-1" onClick={handleClose}>Cancel</Button>
-              <Button type="submit" className="flex-1" disabled={loading}>
-                {loading ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Posting</> : "Post Request"}
-              </Button>
+            {err && <div style={{ fontSize:12,color:"#f87171",marginBottom:12 }}>{err}</div>}
+            <div style={{ display:"flex",gap:10 }}>
+              <button type="button" style={{ ...btnOutline,flex:1 }} onClick={close}>Cancel</button>
+              <button type="submit" style={{ ...btnPrimary,flex:1,opacity:loading?0.6:1 }} disabled={loading}>
+                {loading?<><Loader2 size={14} style={{ animation:"spin 1s linear infinite" }} />Posting</>:"Post Request"}
+              </button>
             </div>
           </form>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }
 
 function useReceivedPayments(publicKey) {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const mountedRef = useRef(true);
-
+  const ref = useRef(true);
   useEffect(() => {
-    mountedRef.current = true;
+    ref.current = true;
     const fetch = async () => {
       if (!publicKey) return;
       try {
-        const result = await server.payments().forAccount(publicKey).limit(20).order("desc").call();
-        if (!mountedRef.current) return;
-        setPayments(result.records.filter(p => p.type==="payment" && p.asset_type==="native" && p.to===publicKey)
-          .map(p => ({ id:p.id, from:p.from, amount:parseFloat(p.amount).toFixed(2), time:p.created_at, hash:p.transaction_hash })));
+        const r = await server.payments().forAccount(publicKey).limit(20).order("desc").call();
+        if (!ref.current) return;
+        setPayments(r.records.filter(p=>p.type==="payment"&&p.asset_type==="native"&&p.to===publicKey)
+          .map(p=>({ id:p.id,from:p.from,amount:parseFloat(p.amount).toFixed(2),time:p.created_at,hash:p.transaction_hash })));
       } catch {}
-      finally { if (mountedRef.current) setLoading(false); }
+      finally { if (ref.current) setLoading(false); }
     };
     fetch();
     const iv = setInterval(fetch, 10000);
-    return () => { mountedRef.current=false; clearInterval(iv); };
+    return () => { ref.current=false; clearInterval(iv); };
   }, [publicKey]);
-
   return { payments, loading };
 }
 
-function RequestCard({ request, isOwn }) {
-  const pct = Math.min(100, Math.round((request.raised / request.goalXLM) * 100));
-  const expired = new Date(request.expiresAt) < new Date();
+function RequestCard({ req }) {
+  const pct = Math.min(100, Math.round((req.raised/req.goalXLM)*100));
+  const expired = new Date(req.expiresAt) < new Date();
+  const tl = timeLeft(req.expiresAt);
   return (
-    <div className={`bg-[var(--card-bg)] border rounded-xl p-5 ${expired ? "border-[var(--border)] opacity-50" : "border-[var(--card-border)]"}`}>
-      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="secondary">{request.field}</Badge>
-          {expired ? <Badge variant="red">Expired</Badge> : <Badge variant="amber"><Clock className="w-3 h-3" />{timeLeft(request.expiresAt)}</Badge>}
-          {request.raised >= request.goalXLM && !expired && <Badge variant="green"><CheckCircle2 className="w-3 h-3" />Funded</Badge>}
-        </div>
-        {isOwn && <Badge variant="yellow">Your request</Badge>}
+    <div style={{ ...card,opacity:expired?0.5:1,marginBottom:12 }}>
+      <div style={{ display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap" }}>
+        <Badge text={req.field} />
+        {expired
+          ? <Badge text="Expired" color="#f87171" bg="rgba(239,68,68,0.1)" border="rgba(239,68,68,0.2)" />
+          : <Badge text={tl} color="#fbbf24" bg="rgba(251,191,36,0.1)" border="rgba(251,191,36,0.2)" />
+        }
+        {req.raised>=req.goalXLM&&!expired&&<Badge text="Funded" color="#4ade80" bg="rgba(74,222,128,0.1)" border="rgba(74,222,128,0.2)" />}
+        <Badge text="Your request" color="var(--yellow)" bg="var(--yellow-bg)" border="var(--yellow-border)" />
       </div>
-      <h3 className="text-sm font-semibold text-[var(--text)] mb-1.5 leading-snug">{request.purpose}</h3>
-      <p className="text-xs text-[var(--text-muted)] leading-relaxed mb-4">{request.description}</p>
-      <div className="flex items-center gap-3 text-xs font-mono text-[var(--text-dim)] mb-4">
-        <span>{request.location}</span><span>·</span><span>{shortAddress(request.studentWallet)}</span>
+      <h3 style={{ fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:6 }}>{req.purpose}</h3>
+      <p style={{ fontSize:12,color:"var(--text-muted)",lineHeight:1.6,marginBottom:12 }}>{req.description}</p>
+      <div style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",marginBottom:12 }}>{req.location} · {shortAddress(req.studentWallet)}</div>
+      <div style={{ background:"var(--surface-2)",borderRadius:4,height:4,overflow:"hidden",marginBottom:6 }}>
+        <div style={{ height:"100%",width:`${pct}%`,background:"var(--yellow)",borderRadius:4,transition:"width 0.3s" }} />
       </div>
-      <div className="space-y-1.5">
-        <Progress value={pct} />
-        <div className="flex justify-between text-xs font-mono text-[var(--text-dim)]">
-          <span>{request.raised} XLM raised</span><span>{pct}% of {request.goalXLM} XLM</span>
-        </div>
+      <div style={{ display:"flex",justifyContent:"space-between",fontSize:11,fontFamily:"monospace",color:"var(--text-dim)" }}>
+        <span>{req.raised} XLM raised</span><span>{pct}% of {req.goalXLM} XLM</span>
       </div>
-      {request.donorCount > 0 && <p className="text-xs text-[var(--text-dim)] font-mono mt-2">{request.donorCount} donor{request.donorCount!==1?"s":""}</p>}
+      {req.donorCount>0&&<div style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",marginTop:6 }}>{req.donorCount} donor{req.donorCount!==1?"s":""}</div>}
     </div>
   );
 }
@@ -193,62 +182,67 @@ function RequestCard({ request, isOwn }) {
 export default function StudentPortal() {
   const { publicKey, balance } = useWallet();
   const { getRequestsByWallet, postRequest } = useApp();
-  const [tab, setTab] = useState("my-requests");
+  const [tab, setTab] = useState("requests");
   const [showPost, setShowPost] = useState(false);
-  const { payments, loading: paymentsLoading } = useReceivedPayments(publicKey);
-  const myRequests = getRequestsByWallet(publicKey);
-  const totalReceived = payments.reduce((s,p) => s + parseFloat(p.amount), 0);
+  const { payments, loading:pmtLoading } = useReceivedPayments(publicKey);
+  const myReqs = getRequestsByWallet(publicKey);
+  const totalRec = payments.reduce((s,p)=>s+parseFloat(p.amount),0);
+  const active = myReqs.filter(r=>new Date(r.expiresAt)>=new Date());
+  const expired = myReqs.filter(r=>new Date(r.expiresAt)<new Date());
 
   const tabs = [
-    { id:"my-requests", label:`My Requests (${myRequests.length})` },
-    { id:"received",    label:`Received${payments.length>0?` (${payments.length})`:""}` },
+    { id:"requests", label:`My Requests (${myReqs.length})` },
+    { id:"received", label:`Received${payments.length>0?` (${payments.length})`:""}` },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-8">
-      <div className="flex items-start justify-between mb-8">
+    <div style={{ maxWidth:896,margin:"0 auto",padding:"32px 24px" }}>
+      {/* Header */}
+      <div style={{ display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:32 }}>
         <div>
-          <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">SCHOLARCHAIN / STUDENT</div>
-          <h1 className="text-lg font-semibold text-[var(--text)] tracking-tight">Student Dashboard</h1>
+          <div style={tag}>SCHOLARCHAIN / STUDENT</div>
+          <h1 style={{ fontSize:20,fontWeight:600,color:"var(--text)",letterSpacing:"-0.02em",marginTop:4 }}>Student Dashboard</h1>
         </div>
-        <Button size="sm" onClick={() => setShowPost(true)} className="gap-1.5 text-xs">
-          <Plus className="w-3.5 h-3.5" /> Post Request
-        </Button>
+        <button style={{ ...btnPrimary,gap:6,fontSize:12 }} onClick={()=>setShowPost(true)}>
+          <Plus size={14}/>Post Request
+        </button>
       </div>
 
       {/* Wallet strip */}
-      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl px-5 py-4 mb-6 flex flex-wrap gap-6">
-        <div><div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">Wallet</div><div className="font-mono text-xs text-[var(--text-muted)]">{shortAddress(publicKey)}</div></div>
-        <div className="w-px bg-[var(--border)] hidden sm:block" />
-        <div><div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">Balance</div><div className="font-mono text-sm text-[var(--text)]">{formatXLM(balance)} XLM</div></div>
-        {totalReceived > 0 && (<><div className="w-px bg-[var(--border)] hidden sm:block" /><div><div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-1">Total Received</div><div className="font-mono text-sm text-green-500">{totalReceived.toFixed(2)} XLM</div></div></>)}
+      <div style={{ ...card,display:"flex",flexWrap:"wrap",gap:24,marginBottom:24 }}>
+        <div><span style={label}>Wallet</span><div style={mono}>{shortAddress(publicKey)}</div></div>
+        <div style={{ width:1,background:"var(--border)" }} />
+        <div><span style={label}>Balance</span><div style={{ fontSize:14,fontWeight:600,color:"var(--text)",fontFamily:"monospace" }}>{formatXLM(balance)} XLM</div></div>
+        {totalRec>0&&<><div style={{ width:1,background:"var(--border)" }} /><div><span style={label}>Total Received</span><div style={{ fontSize:14,fontWeight:600,color:"#4ade80",fontFamily:"monospace" }}>{totalRec.toFixed(2)} XLM</div></div></>}
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-[var(--border)] mb-6">
-        {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`px-4 py-2.5 text-xs font-mono uppercase tracking-widest transition-colors border-b-2 -mb-px ${tab===t.id ? "border-[var(--yellow)] text-[var(--text)]" : "border-transparent text-[var(--text-dim)] hover:text-[var(--text-muted)]"}`}>
+      <div style={{ display:"flex",borderBottom:"1px solid var(--border)",marginBottom:24 }}>
+        {tabs.map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            style={{ padding:"10px 16px",fontSize:11,fontFamily:"monospace",textTransform:"uppercase",letterSpacing:"0.1em",background:"none",border:"none",cursor:"pointer",borderBottom:`2px solid ${tab===t.id?"var(--yellow)":"transparent"}`,color:tab===t.id?"var(--text)":"var(--text-dim)",marginBottom:-1 }}>
             {t.label}
           </button>
         ))}
       </div>
 
       {/* My Requests */}
-      {tab==="my-requests" && (
-        <div className="space-y-3">
-          {myRequests.length===0 ? (
-            <div className="text-center py-16 border border-dashed border-[var(--border)] rounded-xl">
-              <div className="text-[var(--text-dim)] text-sm font-mono mb-3">No requests posted yet</div>
-              <Button size="sm" onClick={() => setShowPost(true)} className="gap-1.5 text-xs"><Plus className="w-3.5 h-3.5" /> Post your first request</Button>
+      {tab==="requests"&&(
+        <div>
+          {myReqs.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12 }}>
+              <div style={{ fontSize:13,fontFamily:"monospace",color:"var(--text-dim)",marginBottom:16 }}>No requests posted yet</div>
+              <button style={{ ...btnPrimary,fontSize:12,gap:6 }} onClick={()=>setShowPost(true)}><Plus size={14}/>Post your first request</button>
             </div>
-          ) : (
+          ):(
             <>
-              {myRequests.filter(r => new Date(r.expiresAt)>=new Date()).map(r => <RequestCard key={r.id} request={r} isOwn />)}
-              {myRequests.filter(r => new Date(r.expiresAt)<new Date()).length>0 && (
-                <div className="mt-6">
-                  <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-3 flex items-center gap-2"><AlertCircle className="w-3 h-3" />Expired requests</div>
-                  {myRequests.filter(r => new Date(r.expiresAt)<new Date()).map(r => <RequestCard key={r.id} request={r} isOwn />)}
+              {active.map(r=><RequestCard key={r.id} req={r}/>)}
+              {expired.length>0&&(
+                <div style={{ marginTop:24 }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:6,fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12 }}>
+                    <AlertCircle size={12}/>Expired requests
+                  </div>
+                  {expired.map(r=><RequestCard key={r.id} req={r}/>)}
                 </div>
               )}
             </>
@@ -256,44 +250,43 @@ export default function StudentPortal() {
         </div>
       )}
 
-      {/* Received */}
-      {tab==="received" && (
-        <div className="space-y-3">
-          {paymentsLoading ? (
-            <div className="flex items-center justify-center gap-2 text-sm text-[var(--text-dim)] font-mono py-16">
-              <Loader2 className="w-4 h-4 animate-spin" /> Fetching on-chain payments...
+      {/* Received Payments */}
+      {tab==="received"&&(
+        <div>
+          {pmtLoading?(
+            <div style={{ display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"64px 0",fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
+              <Loader2 size={16} style={{ animation:"spin 1s linear infinite" }}/>Fetching on-chain payments...
             </div>
-          ) : payments.length===0 ? (
-            <div className="text-center py-16 text-[var(--text-dim)] text-sm font-mono">No incoming payments found for this wallet yet.</div>
-          ) : (
+          ):payments.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 0",fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>No incoming payments found for this wallet yet.</div>
+          ):(
             <>
-              <div className="bg-[var(--yellow-bg)] border border-[var(--yellow-border)] rounded-xl px-5 py-4 flex items-center justify-between mb-2">
-                <div className="text-sm text-[var(--text-muted)]">Total received on-chain</div>
-                <div className="font-mono text-lg font-semibold text-[var(--yellow)]">{totalReceived.toFixed(2)} XLM</div>
+              <div style={{ background:"var(--yellow-bg)",border:"1px solid var(--yellow-border)",borderRadius:12,padding:"16px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16 }}>
+                <span style={{ fontSize:13,color:"var(--text-muted)" }}>Total received on-chain</span>
+                <span style={{ fontSize:18,fontWeight:600,fontFamily:"monospace",color:"var(--yellow)" }}>{totalRec.toFixed(2)} XLM</span>
               </div>
-              {payments.map(p => (
-                <div key={p.id} className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center flex-shrink-0">
-                        <ArrowDownLeft className="w-4 h-4 text-green-500" />
+              {payments.map(p=>(
+                <div key={p.id} style={{ ...card,marginBottom:12 }}>
+                  <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16 }}>
+                    <div style={{ display:"flex",alignItems:"center",gap:12 }}>
+                      <div style={{ width:32,height:32,borderRadius:"50%",background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.2)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0 }}>
+                        <ArrowDownLeft size={16} style={{ color:"#4ade80" }}/>
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-[var(--text)]">+{p.amount} XLM</div>
-                        <div className="text-xs font-mono text-[var(--text-dim)] mt-0.5">{timeAgo(p.time)}</div>
+                        <div style={{ fontSize:14,fontWeight:600,color:"var(--text)" }}>+{p.amount} XLM</div>
+                        <div style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",marginTop:2 }}>{timeAgo(p.time)}</div>
                       </div>
                     </div>
-                    <Badge variant="green"><CheckCircle2 className="w-3 h-3" />Confirmed</Badge>
+                    <Badge text="Confirmed" color="#4ade80" bg="rgba(74,222,128,0.1)" border="rgba(74,222,128,0.2)" />
                   </div>
-                  {/* Fix 5 — CopyHash component */}
                   <CopyHash hash={p.hash} label="Transaction Hash" />
-                  <div className="mt-3 bg-[var(--bg)] rounded-lg p-3 border border-[var(--border)]">
-                    <div className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest mb-0.5">From</div>
-                    <div className="font-mono text-xs text-[var(--text-muted)]">{p.from}</div>
+                  <div style={{ background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",marginTop:10 }}>
+                    <span style={label}>From</span>
+                    <div style={mono}>{p.from}</div>
                   </div>
                   <a href={`https://stellar.expert/explorer/testnet/tx/${p.hash}`} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-mono text-[var(--text-dim)] hover:text-[var(--text)] transition-colors mt-3">
-                    View on Stellar Explorer <ExternalLink className="w-3 h-3" />
+                    style={{ display:"inline-flex",alignItems:"center",gap:4,fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",marginTop:10,textDecoration:"none" }}>
+                    View on Stellar Explorer <ExternalLink size={11}/>
                   </a>
                 </div>
               ))}
@@ -302,8 +295,9 @@ export default function StudentPortal() {
         </div>
       )}
 
-      <PostRequestDialog open={showPost} onClose={() => setShowPost(false)}
-        onPosted={async (data) => { await postRequest(publicKey, data); setTab("my-requests"); }} />
+      <PostDialog open={showPost} onClose={()=>setShowPost(false)}
+        onPosted={async(data)=>{ await postRequest(publicKey, data); setTab("requests"); }} />
+      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 }

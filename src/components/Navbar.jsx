@@ -14,64 +14,40 @@ export default function Navbar() {
 
   const handleFund = async () => {
     setFunding(true);
-    try {
-      await fundTestnetAccount(publicKey);
-      await refreshBalance();
-      setFunded(true);
-      setTimeout(() => setFunded(false), 3000);
-    } catch {}
+    try { await fundTestnetAccount(publicKey); await refreshBalance(); setFunded(true); setTimeout(()=>setFunded(false),3000); }
+    catch {}
     finally { setFunding(false); }
   };
 
-  const handleDisconnect = () => { disconnect(); navigate("/"); };
-
-  const navStyle = {
-    position: "sticky", top: 0, zIndex: 50,
-    borderBottom: "1px solid var(--border)",
-    background: "var(--nav-bg)",
-    backdropFilter: "blur(12px)",
-  };
-
-  const textStyle = { color: "var(--text)" };
-  const mutedStyle = { color: "var(--text-dim)" };
-  const yellowBadge = {
-    fontSize: "10px", fontFamily: "monospace", fontWeight: 500,
-    background: "var(--yellow-bg)", color: "var(--yellow)",
-    border: "1px solid var(--yellow-border)",
-    padding: "2px 6px", borderRadius: "4px",
-    textTransform: "uppercase", letterSpacing: "0.08em",
-  };
-
   return (
-    <header style={navStyle}>
-      <div className="max-w-5xl mx-auto px-6 h-12 flex items-center gap-4">
-        <button onClick={() => navigate("/")} className="flex items-center gap-2.5 mr-auto hover:opacity-80 transition-opacity">
-          <span className="text-sm font-semibold tracking-tight" style={textStyle}>ScholarChain</span>
-          <span style={yellowBadge}>Testnet</span>
-          {role && <span className="text-xs font-mono hidden sm:inline" style={mutedStyle}>/ {role}</span>}
+    <header style={{ position:"sticky",top:0,zIndex:50,borderBottom:"1px solid var(--border)",background:"var(--nav-bg)",backdropFilter:"blur(12px)" }}>
+      <div style={{ maxWidth:1024,margin:"0 auto",padding:"0 24px",height:48,display:"flex",alignItems:"center",gap:16 }}>
+        <button onClick={()=>navigate("/")} style={{ display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",marginRight:"auto" }}>
+          <span style={{ fontSize:14,fontWeight:600,color:"var(--text)",letterSpacing:"-0.01em" }}>ScholarChain</span>
+          <span style={{ fontSize:10,fontFamily:"monospace",fontWeight:500,background:"var(--yellow-bg)",color:"var(--yellow)",border:"1px solid var(--yellow-border)",padding:"2px 6px",borderRadius:4,textTransform:"uppercase",letterSpacing:"0.08em" }}>Testnet</span>
+          {role&&<span style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)" }}>/ {role}</span>}
         </button>
 
-        <button onClick={toggle} className="transition-colors hover:opacity-100 opacity-60" style={textStyle} title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
-          {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+        <button onClick={toggle} style={{ background:"none",border:"none",cursor:"pointer",color:"var(--text-dim)",display:"flex",alignItems:"center" }} title={theme==="dark"?"Light mode":"Dark mode"}>
+          {theme==="dark"?<Sun size={14}/>:<Moon size={14}/>}
         </button>
 
-        {publicKey && (
+        {publicKey&&(
           <>
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs font-mono" style={mutedStyle}>{isLoadingBalance ? "..." : `${formatXLM(balance)} XLM`}</span>
-              <button onClick={() => refreshBalance()} className="opacity-40 hover:opacity-80 transition-opacity" style={textStyle}><RefreshCw className="w-3 h-3" /></button>
+            <div style={{ display:"flex",alignItems:"center",gap:6 }}>
+              <span style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)" }}>{isLoadingBalance?"...":formatXLM(balance)+" XLM"}</span>
+              <button onClick={()=>refreshBalance()} style={{ background:"none",border:"none",cursor:"pointer",color:"var(--text-dim)",display:"flex" }}><RefreshCw size={11}/></button>
             </div>
-            <div className="h-3 w-px hidden sm:block" style={{ background: "var(--border)" }} />
-            <span className="font-mono text-xs hidden sm:block" style={mutedStyle}>{shortAddress(publicKey)}</span>
-            {parseFloat(balance) < 10 && (
+            <div style={{ width:1,height:12,background:"var(--border)" }}/>
+            <span style={{ fontSize:11,fontFamily:"monospace",color:"var(--text-dim)" }}>{shortAddress(publicKey)}</span>
+            {parseFloat(balance)<10&&(
               <button onClick={handleFund} disabled={funding}
-                className="hidden sm:flex items-center h-7 px-3 text-xs font-semibold rounded-md transition-opacity hover:opacity-85 disabled:opacity-40"
-                style={{ background: "var(--yellow)", color: "#000" }}>
-                {funded ? "Funded" : funding ? "..." : "Get Test XLM"}
+                style={{ height:28,padding:"0 12px",fontSize:11,fontWeight:600,background:"var(--yellow)",color:"#000",border:"none",borderRadius:6,cursor:"pointer",opacity:funding?0.6:1 }}>
+                {funded?"Funded":funding?"...":"Get Test XLM"}
               </button>
             )}
-            <button onClick={handleDisconnect} className="opacity-40 hover:opacity-100 transition-opacity ml-1" style={textStyle} title="Disconnect">
-              <LogOut className="w-3.5 h-3.5" />
+            <button onClick={()=>{ disconnect(); navigate("/"); }} style={{ background:"none",border:"none",cursor:"pointer",color:"var(--text-dim)",display:"flex",alignItems:"center" }} title="Disconnect">
+              <LogOut size={14}/>
             </button>
           </>
         )}

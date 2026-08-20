@@ -7,37 +7,30 @@ export default function CopyHash({ hash, label = "Transaction Hash" }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(hash);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback for older browsers
       const el = document.createElement("textarea");
       el.value = hash;
       document.body.appendChild(el);
       el.select();
       document.execCommand("copy");
       document.body.removeChild(el);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="bg-[var(--bg)] rounded-lg p-3 border border-[var(--border)]">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-mono text-[var(--text-dim)] uppercase tracking-widest">{label}</span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1 text-xs font-mono text-[var(--text-dim)] hover:text-[var(--text)] transition-colors"
-          title="Copy to clipboard"
-        >
-          {copied
-            ? <><Check className="w-3 h-3 text-green-500" /><span className="text-green-500">Copied</span></>
-            : <><Copy className="w-3 h-3" />Copy</>
-          }
+    <div style={{ background:"var(--bg)", border:"1px solid var(--border)", borderRadius:8, padding:"10px 12px" }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:6 }}>
+        <span style={{ fontSize:10, fontFamily:"monospace", color:"var(--text-dim)", textTransform:"uppercase", letterSpacing:"0.1em" }}>
+          {label}
+        </span>
+        <button onClick={handleCopy}
+          style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, fontFamily:"monospace", color:copied?"#4ade80":"var(--text-dim)", background:"none", border:"none", cursor:"pointer" }}>
+          {copied ? <><Check size={11} style={{ color:"#4ade80" }}/>Copied</> : <><Copy size={11}/>Copy</>}
         </button>
       </div>
-      <div className="font-mono text-xs text-[var(--text-muted)] break-all leading-relaxed">{hash}</div>
+      <div style={{ fontFamily:"monospace", fontSize:11, color:"var(--text-muted)", wordBreak:"break-all", lineHeight:1.5 }}>{hash}</div>
     </div>
   );
 }

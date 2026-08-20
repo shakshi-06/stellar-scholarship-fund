@@ -2,227 +2,219 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import { useTheme } from "../context/ThemeContext";
-import Footer from "../components/Footer";
 import ActivityStrip from "../components/ActivityStrip";
-import { Button } from "@/components/ui/button";
 import { Loader2, ArrowRight, BookOpen, Wallet, Sun, Moon } from "lucide-react";
 
-function ConnectModal({ role, onClose }) {
+const S = {
+  page: { minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)", color: "var(--text)" },
+  nav: { borderBottom: "1px solid var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 50 },
+  navInner: { maxWidth: 1024, margin: "0 auto", padding: "0 24px", height: 48, display: "flex", alignItems: "center", gap: 12 },
+  brand: { fontSize: 14, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text)", background: "none", border: "none", cursor: "pointer" },
+  badge: { fontSize: 10, fontFamily: "monospace", fontWeight: 500, background: "var(--yellow-bg)", color: "var(--yellow)", border: "1px solid var(--yellow-border)", padding: "2px 6px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.08em" },
+  navRight: { marginLeft: "auto", display: "flex", alignItems: "center", gap: 20 },
+  navLink: { fontSize: 12, fontFamily: "monospace", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer" },
+  themeBtn: { background: "none", border: "none", cursor: "pointer", color: "var(--text-muted)", display: "flex", alignItems: "center" },
+  hero: { flex: 1, maxWidth: 1024, margin: "0 auto", padding: "96px 24px 80px", width: "100%" },
+  heroInner: { maxWidth: 640 },
+  tag: { fontSize: 11, fontFamily: "monospace", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 24, display: "block" },
+  h1: { fontSize: "clamp(32px, 5vw, 48px)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.1, marginBottom: 24, color: "var(--text)" },
+  yellow: { color: "var(--yellow)" },
+  sub: { fontSize: 15, color: "var(--text-muted)", lineHeight: 1.7, marginBottom: 40, maxWidth: 480 },
+  btnRow: { display: "flex", gap: 12, flexWrap: "wrap" },
+  btnPrimary: { display: "flex", alignItems: "center", gap: 10, height: 44, padding: "0 24px", fontSize: 14, fontWeight: 600, borderRadius: 8, background: "var(--text)", color: "var(--bg)", border: "none", cursor: "pointer" },
+  btnSecondary: { display: "flex", alignItems: "center", gap: 10, height: 44, padding: "0 24px", fontSize: 14, fontWeight: 600, borderRadius: 8, background: "transparent", color: "var(--text)", border: "1px solid var(--border-2)", cursor: "pointer" },
+  statsBar: { borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", background: "var(--surface)" },
+  statsInner: { maxWidth: 1024, margin: "0 auto", padding: "24px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0 },
+  statItem: { padding: "0 24px", borderRight: "1px solid var(--border)" },
+  statLabel: { fontSize: 10, fontFamily: "monospace", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 },
+  statValue: { fontSize: 14, fontWeight: 600, color: "var(--text)" },
+  howSection: { maxWidth: 1024, margin: "0 auto", padding: "80px 24px" },
+  howTag: { fontSize: 10, fontFamily: "monospace", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 },
+  howTitle: { fontSize: 24, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--text)", marginBottom: 48 },
+  cardsRow: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 },
+  card: { background: "var(--card-bg)", border: "1px solid var(--card-border)", borderRadius: 12, padding: 24 },
+  cardTag: { fontSize: 10, fontFamily: "monospace", color: "var(--yellow)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 20 },
+  stepRow: { display: "flex", gap: 16, marginBottom: 20 },
+  stepNum: { fontSize: 11, fontFamily: "monospace", color: "var(--text-dim)", width: 20, flexShrink: 0, paddingTop: 2 },
+  stepTitle: { fontSize: 14, fontWeight: 600, color: "var(--text)", marginBottom: 4 },
+  stepDesc: { fontSize: 12, color: "var(--text-muted)", lineHeight: 1.6 },
+  cardBtn: { marginTop: 20, width: "100%", height: 36, fontSize: 12, fontFamily: "monospace", color: "var(--text-muted)", background: "transparent", border: "1px solid var(--border-2)", borderRadius: 8, cursor: "pointer" },
+  footer: { borderTop: "1px solid var(--border)", background: "var(--footer-bg)", padding: "20px 24px" },
+  footerInner: { maxWidth: 1024, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 },
+  footerLinks: { display: "flex", gap: 20 },
+  footerLink: { fontSize: 12, fontFamily: "monospace", color: "var(--text-dim)", textDecoration: "none" },
+  overlay: { position: "fixed", inset: 0, zIndex: 50, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 },
+  modal: { width: "100%", maxWidth: 400, background: "var(--surface)", border: "1px solid var(--card-border)", borderRadius: 12, padding: 24, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
+  modalTag: { fontSize: 10, fontFamily: "monospace", color: "var(--yellow)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 },
+  modalTitle: { fontSize: 15, fontWeight: 600, color: "var(--text)", letterSpacing: "-0.01em", marginBottom: 4 },
+  modalDesc: { fontSize: 13, color: "var(--text-muted)", lineHeight: 1.6, marginBottom: 20 },
+  modalBtn: { width: "100%", height: 40, fontSize: 14, fontWeight: 600, background: "var(--text)", color: "var(--bg)", border: "none", borderRadius: 8, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 },
+  modalCancel: { width: "100%", marginTop: 12, fontSize: 12, fontFamily: "monospace", color: "var(--text-dim)", background: "none", border: "none", cursor: "pointer", padding: "8px 0" },
+  modalNote: { textAlign: "center", fontSize: 11, fontFamily: "monospace", color: "var(--border-2)", marginTop: 16 },
+  warn: { marginBottom: 16, padding: "10px 12px", borderRadius: 8, fontSize: 12, background: "var(--yellow-bg)", border: "1px solid var(--yellow-border)", color: "var(--yellow)" },
+  err: { marginBottom: 16, padding: "10px 12px", borderRadius: 8, fontSize: 12, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" },
+};
+
+const HOW = {
+  student: [
+    { n:"01", t:"Connect Wallet", d:"Connect your Freighter wallet. Your wallet address is where you will receive XLM." },
+    { n:"02", t:"Post a Request", d:"Describe your funding need, set a goal in XLM, and choose a deadline of 7, 14, or 30 days." },
+    { n:"03", t:"Receive Funds", d:"Donors browse requests and send XLM directly to your wallet. No middlemen, no waiting." },
+  ],
+  donor: [
+    { n:"01", t:"Connect Wallet", d:"Connect your Freighter wallet. Make sure you have test XLM — use Get Test XLM if needed." },
+    { n:"02", t:"Browse Requests", d:"Read student funding requests. Filter by field, sort by urgency, search by keyword." },
+    { n:"03", t:"Send XLM", d:"Pick who you want to support, enter an amount, and sign with Freighter. Funds arrive in seconds." },
+  ],
+};
+
+function Modal({ role, onClose }) {
   const { connect, isConnecting, walletError, freighterInstalled } = useWallet();
   const navigate = useNavigate();
+  const cfg = role === "student"
+    ? { tag:"STUDENT", title:"Connect as Student", desc:"Post your funding request and receive XLM directly to your wallet." }
+    : { tag:"DONOR",   title:"Connect as Donor",   desc:"Browse student requests and send XLM directly to who you want to support." };
 
-  const config = {
-    student: {
-      tag: "STUDENT",
-      title: "Connect as Student",
-      desc: "Post your funding request and receive XLM directly to your wallet.",
-    },
-    donor: {
-      tag: "DONOR",
-      title: "Connect as Donor",
-      desc: "Browse student requests and send XLM directly to who you want to support.",
-    },
-  }[role];
-
-  const handleConnect = async () => {
-    await connect(role);
-    navigate(role === "student" ? "/student" : "/donor");
-  };
+  const go = async () => { await connect(role); navigate(role === "student" ? "/student" : "/donor"); };
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-6"
-      onClick={e => e.target === e.currentTarget && onClose()}
-    >
-      <div className="w-full max-w-sm rounded-xl p-6 shadow-2xl"
-        style={{ background: "var(--surface)", border: "1px solid var(--card-border)" }}>
-        <div className="mb-5">
-          <span className="text-xs font-mono uppercase tracking-widest" style={{ color: "var(--yellow)" }}>{config.tag}</span>
-          <h2 className="text-base font-semibold mt-1.5 tracking-tight" style={{ color: "var(--text)" }}>{config.title}</h2>
-          <p className="text-sm mt-1 leading-relaxed" style={{ color: "var(--text-muted)" }}>{config.desc}</p>
-        </div>
-
+    <div style={S.overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={S.modal}>
+        <div style={S.modalTag}>{cfg.tag}</div>
+        <div style={S.modalTitle}>{cfg.title}</div>
+        <div style={S.modalDesc}>{cfg.desc}</div>
         {freighterInstalled === false && (
-          <div className="mb-4 px-3 py-2.5 rounded-lg text-xs" style={{ background: "var(--yellow-bg)", border: "1px solid var(--yellow-border)", color: "var(--yellow)" }}>
-            Freighter wallet required.{" "}
-            <a href="https://www.freighter.app" target="_blank" rel="noreferrer" className="underline font-semibold">Install Freighter</a>{" "}
-            and set it to Testnet.
-          </div>
+          <div style={S.warn}>Freighter required. <a href="https://www.freighter.app" target="_blank" rel="noreferrer" style={{ textDecoration:"underline", fontWeight:600 }}>Install it here</a> and set to Testnet.</div>
         )}
-
         {walletError && (
-          <div className="mb-4 px-3 py-2.5 rounded-lg text-xs text-red-400" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
-            {walletError === "FREIGHTER_NOT_INSTALLED" && "Freighter not found. Install it first."}
+          <div style={S.err}>
+            {walletError === "FREIGHTER_NOT_INSTALLED" && "Freighter not found."}
             {walletError === "USER_DECLINED" && "Connection cancelled."}
             {walletError === "CONNECTION_FAILED" && "Could not connect. Try again."}
           </div>
         )}
-
-        <Button className="w-full h-10" onClick={handleConnect} disabled={isConnecting || freighterInstalled === false}>
-          {isConnecting ? <><Loader2 className="w-4 h-4 animate-spin" /> Connecting</> : <>Connect Freighter <ArrowRight className="w-4 h-4" /></>}
-        </Button>
-
-        <button onClick={onClose} className="w-full mt-3 text-xs font-mono transition-colors" style={{ color: "var(--text-dim)" }}>
-          Cancel
+        <button style={{ ...S.modalBtn, opacity: isConnecting || freighterInstalled === false ? 0.5 : 1 }}
+          onClick={go} disabled={isConnecting || freighterInstalled === false}>
+          {isConnecting ? <><Loader2 style={{ width:16, height:16, animation:"spin 1s linear infinite" }} /> Connecting</> : <>Connect Freighter <ArrowRight style={{ width:16, height:16 }} /></>}
         </button>
-
-        <p className="text-center text-xs mt-4 font-mono" style={{ color: "var(--border-2)" }}>
-          Stellar Testnet / No real funds used
-        </p>
+        <button style={S.modalCancel} onClick={onClose}>Cancel</button>
+        <div style={S.modalNote}>Stellar Testnet / No real funds used</div>
       </div>
     </div>
   );
 }
 
-const HOW_IT_WORKS = {
-  student: [
-    { step: "01", title: "Connect Wallet", desc: "Connect your Freighter wallet. Your wallet address is where you will receive XLM." },
-    { step: "02", title: "Post a Request", desc: "Describe your funding need, set a goal in XLM, and choose a deadline of 7, 14, or 30 days." },
-    { step: "03", title: "Receive Funds", desc: "Donors browse requests and send XLM directly to your wallet. No middlemen, no waiting." },
-  ],
-  donor: [
-    { step: "01", title: "Connect Wallet", desc: "Connect your Freighter wallet. Make sure you have test XLM — use Get Test XLM if needed." },
-    { step: "02", title: "Browse Requests", desc: "Read student funding requests. Filter by field, sort by urgency, search by keyword." },
-    { step: "03", title: "Send XLM", desc: "Pick who you want to support, enter an amount, and sign with Freighter. Funds arrive in seconds." },
-  ],
-};
-
 export default function Landing() {
-  const [connectRole, setConnectRole] = useState(null);
+  const [role, setRole] = useState(null);
   const { theme, toggle } = useTheme();
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)", color: "var(--text)" }}>
-
-      {/* Subtle glow — dark only */}
-      {theme === "dark" && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="absolute top-[-200px] left-1/2 -translate-x-1/2 w-[600px] h-[500px] rounded-full"
-            style={{ background: "rgba(242,217,78,0.04)", filter: "blur(140px)" }} />
-        </div>
-      )}
-
+    <div style={S.page}>
       {/* Navbar */}
-      <header className="relative z-10 border-b" style={{ borderColor: "var(--border)", background: "var(--nav-bg)", backdropFilter: "blur(12px)" }}>
-        <div className="max-w-5xl mx-auto px-6 h-12 flex items-center gap-3">
-          <span className="text-sm font-semibold tracking-tight" style={{ color: "var(--text)" }}>ScholarChain</span>
-          <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded uppercase tracking-wider"
-            style={{ background: "var(--yellow-bg)", color: "var(--yellow)", border: "1px solid var(--yellow-border)" }}>
-            Testnet
-          </span>
-          <div className="ml-auto flex items-center gap-5">
-            <button onClick={() => setConnectRole("student")} className="text-xs font-mono transition-colors hover:opacity-100 opacity-60" style={{ color: "var(--text)" }}>
-              Student
-            </button>
-            <button onClick={() => setConnectRole("donor")} className="text-xs font-mono transition-colors hover:opacity-100 opacity-60" style={{ color: "var(--text)" }}>
-              Donor
-            </button>
-            <button onClick={toggle} className="transition-colors opacity-60 hover:opacity-100" style={{ color: "var(--text)" }}>
-              {theme === "dark" ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+      <header style={S.nav}>
+        <div style={S.navInner}>
+          <span style={S.brand}>ScholarChain</span>
+          <span style={S.badge}>Testnet</span>
+          <div style={S.navRight}>
+            <button style={S.navLink} onClick={() => setRole("student")}>Student</button>
+            <button style={S.navLink} onClick={() => setRole("donor")}>Donor</button>
+            <button style={S.themeBtn} onClick={toggle} title="Toggle theme">
+              {theme === "dark" ? <Sun style={{ width:14, height:14 }} /> : <Moon style={{ width:14, height:14 }} />}
             </button>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 flex-1 w-full px-6">
-        <div className="max-w-5xl mx-auto pt-24 pb-20">
-          <div className="max-w-2xl">
-            <div className="text-xs font-mono uppercase tracking-widest mb-6" style={{ color: "var(--text-dim)" }}>
-              Built on Stellar Testnet
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight leading-[1.1] mb-6">
+      <div style={{ flex:1 }}>
+        <div style={S.hero}>
+          <div style={S.heroInner}>
+            <span style={S.tag}>Built on Stellar Testnet</span>
+            <h1 style={S.h1}>
               Fund education.<br />
-              <span style={{ color: "var(--yellow)" }}>Directly on-chain.</span>
+              <span style={S.yellow}>Directly on-chain.</span>
             </h1>
-            <p className="text-base leading-relaxed mb-10 max-w-lg" style={{ color: "var(--text-muted)" }}>
+            <p style={S.sub}>
               Students post funding requests. Donors send XLM directly to student wallets.
               Every transaction is permanent, public, and verifiable on Stellar.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => setConnectRole("student")}
-                className="flex items-center justify-center gap-2.5 h-11 px-6 text-sm font-semibold rounded-md transition-opacity hover:opacity-80"
-                style={{ background: "var(--text)", color: "var(--bg)" }}
-              >
-                <BookOpen className="w-4 h-4" /> I need funding
+            <div style={S.btnRow}>
+              <button style={S.btnPrimary} onClick={() => setRole("student")}>
+                <BookOpen style={{ width:16, height:16 }} /> I need funding
               </button>
-              <button
-                onClick={() => setConnectRole("donor")}
-                className="flex items-center justify-center gap-2.5 h-11 px-6 text-sm font-semibold rounded-md transition-colors"
-                style={{ border: "1px solid var(--border-2)", background: "transparent", color: "var(--text)" }}
-                onMouseEnter={e => e.currentTarget.style.background = "var(--surface-2)"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-              >
-                <Wallet className="w-4 h-4" /> I want to donate
+              <button style={S.btnSecondary} onClick={() => setRole("donor")}>
+                <Wallet style={{ width:16, height:16 }} /> I want to donate
               </button>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Stats bar */}
-      <section className="relative z-10 border-y" style={{ borderColor: "var(--border)", background: "var(--surface)" }}>
-        <div className="max-w-5xl mx-auto px-6 py-6 grid grid-cols-3" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)" }}>
+      {/* Stats */}
+      <div style={S.statsBar}>
+        <div style={S.statsInner}>
           {[
-            { label: "Network", value: "Stellar Testnet" },
-            { label: "Finality", value: "~5 seconds" },
-            { label: "Transaction fee", value: "< $0.001" },
+            { l:"Network", v:"Stellar Testnet" },
+            { l:"Finality", v:"~5 seconds" },
+            { l:"Transaction fee", v:"< $0.001" },
           ].map((s, i) => (
-            <div key={s.label} className={`py-1 text-center sm:text-left ${i === 0 ? "pr-6" : i === 1 ? "px-6" : "pl-6"}`}
-              style={{ borderColor: "var(--border)" }}>
-              <div className="text-xs font-mono uppercase tracking-widest mb-1" style={{ color: "var(--text-dim)" }}>{s.label}</div>
-              <div className="text-sm font-semibold" style={{ color: "var(--text)" }}>{s.value}</div>
+            <div key={s.l} style={{ ...S.statItem, borderRight: i < 2 ? "1px solid var(--border)" : "none", paddingLeft: i === 0 ? 0 : 24 }}>
+              <div style={S.statLabel}>{s.l}</div>
+              <div style={S.statValue}>{s.v}</div>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      {/* Activity strip */}
+      {/* Activity Strip */}
       <ActivityStrip />
 
       {/* How it works */}
-      <section className="relative z-10 px-6">
-        <div className="max-w-5xl mx-auto py-20">
-          <div className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: "var(--text-dim)" }}>How it works</div>
-          <h2 className="text-2xl font-semibold tracking-tight mb-12" style={{ color: "var(--text)" }}>Two roles. One platform.</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {["student", "donor"].map(roleKey => (
-              <div key={roleKey} className="rounded-xl p-6"
-                style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
-                <div className="text-xs font-mono uppercase tracking-widest mb-5" style={{ color: "var(--yellow)" }}>
-                  {roleKey === "student" ? "For Students" : "For Donors"}
-                </div>
-                <div className="space-y-5">
-                  {HOW_IT_WORKS[roleKey].map(item => (
-                    <div key={item.step} className="flex gap-4">
-                      <div className="text-xs font-mono w-6 flex-shrink-0 pt-0.5" style={{ color: "var(--text-dim)" }}>{item.step}</div>
-                      <div>
-                        <div className="text-sm font-semibold mb-1" style={{ color: "var(--text)" }}>{item.title}</div>
-                        <div className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>{item.desc}</div>
-                      </div>
+      <div>
+        <div style={S.howSection}>
+          <div style={S.howTag}>How it works</div>
+          <div style={S.howTitle}>Two roles. One platform.</div>
+          <div style={S.cardsRow}>
+            {["student", "donor"].map(r => (
+              <div key={r} style={S.card}>
+                <div style={S.cardTag}>{r === "student" ? "For Students" : "For Donors"}</div>
+                {HOW[r].map(item => (
+                  <div key={item.n} style={S.stepRow}>
+                    <div style={S.stepNum}>{item.n}</div>
+                    <div>
+                      <div style={S.stepTitle}>{item.t}</div>
+                      <div style={S.stepDesc}>{item.d}</div>
                     </div>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setConnectRole(roleKey)}
-                  className="mt-6 w-full h-9 text-xs font-mono rounded-md transition-colors"
-                  style={{ border: "1px solid var(--border-2)", color: "var(--text-muted)", background: "transparent" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "var(--yellow-border)"; e.currentTarget.style.color = "var(--yellow)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border-2)"; e.currentTarget.style.color = "var(--text-muted)"; }}
-                >
-                  {roleKey === "student" ? "Post a request" : "Browse requests"} →
+                  </div>
+                ))}
+                <button style={S.cardBtn} onClick={() => setRole(r)}>
+                  {r === "student" ? "Post a request" : "Browse requests"} →
                 </button>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      <Footer />
+      {/* Footer */}
+      <footer style={S.footer}>
+        <div style={S.footerInner}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <span style={{ fontSize:14, fontWeight:600, color:"var(--text)" }}>ScholarChain</span>
+            <span style={{ fontSize:12, fontFamily:"monospace", color:"var(--text-dim)" }}>/ Stellar Testnet</span>
+          </div>
+          <div style={S.footerLinks}>
+            <a href="https://stellar.org" target="_blank" rel="noreferrer" style={S.footerLink}>stellar.org</a>
+            <a href="https://stellar.expert/explorer/testnet" target="_blank" rel="noreferrer" style={S.footerLink}>Explorer</a>
+            <a href="https://www.freighter.app" target="_blank" rel="noreferrer" style={S.footerLink}>Freighter</a>
+          </div>
+          <span style={{ fontSize:11, fontFamily:"monospace", color:"var(--text-dim)" }}>All transactions on Testnet</span>
+        </div>
+      </footer>
 
-      {connectRole && <ConnectModal role={connectRole} onClose={() => setConnectRole(null)} />}
+      {role && <Modal role={role} onClose={() => setRole(null)} />}
+
+      <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
     </div>
   );
 }
