@@ -8,24 +8,24 @@ use soroban_sdk::{
 pub enum Key {
     Count,
     Request(u64),
-    FundedWallet(Address),
+    Funded(Address),
 }
 
 #[contracttype]
 #[derive(Clone)]
 pub struct Request {
     pub id: u64,
-    pub student_wallet: Address,
+    pub student: Address,
     pub purpose: String,
     pub field: String,
     pub location: String,
     pub description: String,
-    pub goal_stroops: i128,
-    pub raised_stroops: i128,
+    pub goal: i128,
+    pub raised: i128,
     pub created_at: u64,
     pub expires_at: u64,
     pub donor_count: u32,
-    pub is_active: bool,
+    pub active: bool,
 }
 
 #[contract]
@@ -40,58 +40,92 @@ impl RequestPool {
         field: String,
         location: String,
         description: String,
-        goal_stroops: i128,
+        goal: i128,
         duration_days: u64,
     ) -> u64 {
         student.require_auth();
-        if goal_stroops <= 0 { panic!("Goal must be positive"); }
-        if duration_days == 0 || duration_days > 30 { panic!("Duration 1-30 days only"); }
+        assert!(goal > 0, "goal must be positive");
+        assert!(duration_days > 0 && duration_days <= 30, "duration 1-30 days");
 
         let count: u64 = env.storage().instance().get(&Key::Count).unwrap_or(0);
         let id = count + 1;
         let now = env.ledger().timestamp();
 
-        let request = Request {
-            id, student_wallet: student.clone(), purpose: purpose.clone(),
-            field, location, description, goal_stroops,
-            raised_stroops: 0,
+        let req = Request {
+            id,
+            student: student.clone(),
+            purpose: purpose.clone(),
+            field,
+            location,
+            description,
+            goal,
+            raised: 0,
             created_at: now,
             expires_at: now + duration_days * 86400,
-            donor_count: 0, is_active: true,
+            donor_count: 0,
+            active: true,
         };
 
-        env.storage().instance().set(&Key::Request(id), &request);
+        env.storage().instance().set(&Key::Request(id), &req);
         env.storage().instance().set(&Key::Count, &id);
-        env.events().publish((symbol_short!("posted"), id), (student, goal_stroops, purpose));
+        env.storage().instance().extend_ttl(100, 100);
+
+        env.events().publish(
+            (symbol_short!("posted"), id),
+            (student, goal, purpose),
+        );
         id
     }
 
-    pub fn record_donation(env: Env, donor: Address, request_id: u64, amount_stroops: i128) {
+    pub fn record_donation(
+        env: Env,
+        donor: Address,
+        request_id: u64,
+        amount: i128,
+    ) {
         donor.require_auth();
-        let mut r: Request = env.storage().instance().get(&Key::Request(request_id)).expect("Not found");
-        if env.ledger().timestamp() > r.expires_at { panic!("Expired"); }
-        if !r.is_active { panic!("Inactive"); }
-        if amount_stroops <= 0 { panic!("Amount must be positive"); }
-        r.raised_stroops += amount_stroops;
-        r.donor_count += 1;
-        if r.raised_stroops >= r.goal_stroops {
-            r.is_active = false;
-            env.storage().instance().set(&Key::FundedWallet(r.student_wallet.clone()), &true);
-            env.events().publish((symbol_short!("funded"), request_id), r.student_wallet.clone());
+        let mut req: Request = env.storage().instance()
+            .get(&Key::Request(request_id))
+            .expect("request not found");
+
+        assert!(env.ledger().timestamp() <= req.expires_at, "expired");
+        assert!(req.active, "inactive");
+        assert!(amount > 0, "amount must be positive");
+
+        req.raised += amount;
+        req.donor_count += 1;
+
+        if req.raised >= req.goal {
+            req.active = false;
+            env.storage().instance().set(&Key::Funded(req.student.clone()), &true);
+            env.events().publish(
+                (symbol_short!("funded"), request_id),
+                req.student.clone(),
+            );
         }
-        env.storage().instance().set(&Key::Request(request_id), &r);
-        env.events().publish((symbol_short!("donated"), request_id), (donor, amount_stroops));
+
+        env.storage().instance().set(&Key::Request(request_id), &req);
+        env.storage().instance().extend_ttl(100, 100);
+
+        env.events().publish(
+            (symbol_short!("donated"), request_id),
+            (donor, amount),
+        );
     }
 
     pub fn get_request(env: Env, id: u64) -> Request {
-        env.storage().instance().get(&Key::Request(id)).expect("Not found")
+        env.storage().instance()
+            .get(&Key::Request(id))
+            .expect("not found")
     }
 
     pub fn get_count(env: Env) -> u64 {
         env.storage().instance().get(&Key::Count).unwrap_or(0)
     }
 
-    pub fn is_previously_funded(env: Env, wallet: Address) -> bool {
-        env.storage().instance().get(&Key::FundedWallet(wallet)).unwrap_or(false)
+    pub fn is_funded(env: Env, wallet: Address) -> bool {
+        env.storage().instance()
+            .get(&Key::Funded(wallet))
+            .unwrap_or(false)
     }
 }
