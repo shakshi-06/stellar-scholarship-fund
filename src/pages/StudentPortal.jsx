@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import CopyHash from "../components/CopyHash";
 import { formatXLM, shortAddress, server } from "../utils/stellar";
 import { CheckCircle2, Clock, ExternalLink, Loader2, Plus, AlertCircle, ArrowDownLeft } from "lucide-react";
+import { toast } from "../components/Toast";
 
 /* ── Shared inline style tokens ─────────────────────────── */
 const card   = { background:"var(--card-bg)", border:"1px solid var(--card-border)", borderRadius:12, padding:20 };
@@ -48,8 +49,8 @@ function PostDialog({ open, onClose, onPosted }) {
     e.preventDefault(); setErr("");
     if (parseFloat(f.goalXLM) < 1) { setErr("Goal must be at least 1 XLM."); return; }
     setLoading(true);
-    try { await onPosted({ ...f, goalXLM: parseFloat(f.goalXLM) }); setDone(true); }
-    catch { setErr("Failed to post. Please try again."); }
+    try { await onPosted({ ...f, goalXLM: parseFloat(f.goalXLM) }); setDone(true); toast.success("Request posted — donors can now fund you"); }
+    catch { setErr("Failed to post. Please try again."); toast.error("Failed to post request"); }
     setLoading(false);
   };
   const close = () => { setDone(false); setF({ purpose:"",field:"",location:"",description:"",goalXLM:"",durationDays:14 }); setErr(""); onClose(); };

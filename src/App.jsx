@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { WalletProvider, useWallet } from "./context/WalletContext";
 import { AppProvider } from "./context/AppContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { ToastProvider } from "./components/Toast";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Landing from "./pages/Landing";
@@ -40,6 +41,7 @@ function AppRoutes() {
 export default function App() {
   return (
     <ThemeProvider>
+      <ToastProvider>
       <WalletProvider>
         <AppProvider>
           <BrowserRouter>
@@ -47,6 +49,7 @@ export default function App() {
           </BrowserRouter>
         </AppProvider>
       </WalletProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

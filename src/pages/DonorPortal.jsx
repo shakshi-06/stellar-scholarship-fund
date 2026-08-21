@@ -6,6 +6,7 @@ import { sendXLMTransaction, submitSignedTransaction, getExplorerUrl, formatXLM,
 import { signWithFreighter } from "../utils/freighter";
 import { SC_MEMO } from "../context/AppContext";
 import { CheckCircle2, Clock, ExternalLink, Loader2, Search, ArrowUpRight } from "lucide-react";
+import { toast } from "../components/Toast";
 
 const card     = { background:"var(--card-bg)",border:"1px solid var(--card-border)",borderRadius:12,padding:20 };
 const label    = { fontSize:10,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4,display:"block" };
@@ -62,9 +63,12 @@ function FundDialog({ request, onClose }) {
       await recordFunding(publicKey, request.id, num, result.hash);
       await refreshBalance();
       setState("success");
+      toast.success(`${amount} XLM sent successfully`);
     } catch (err) {
       const msgs = { INSUFFICIENT_BALANCE:"Not enough XLM. Use Get Test XLM in the navbar.", USER_DECLINED_SIGN:"Cancelled in Freighter.", SIGN_FAILED:"Signing failed. Ensure Freighter is set to Testnet.", TX_SUBMIT_FAILED:"Transaction failed. Please try again." };
-      setError(msgs[err.message]||"Something went wrong. Please try again.");
+      const errMsg = msgs[err.message]||"Something went wrong. Please try again.";
+      setError(errMsg);
+      toast.error(errMsg);
       setState("error");
     }
   };
