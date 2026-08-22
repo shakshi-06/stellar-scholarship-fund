@@ -9,9 +9,8 @@ import {
 
 export const SC_MEMO = "SC-FUND";
 
-const LS_REQUESTS  = "scfund_requests";
-const LS_DONATIONS = "scfund_donations";
-const LS_FEED      = "scfund_feed";
+const LS_REQ  = "scfund_v2_requests";
+const LS_DON  = "scfund_v2_donations";
 
 const loadLS = (key, fb) => {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; }
@@ -24,85 +23,135 @@ const saveLS = (key, val) => {
 const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
-  const [requests, setRequests]     = useState(() => loadLS(LS_REQUESTS, []));
-  const [donations, setDonations]   = useState(() => loadLS(LS_DONATIONS, []));
-  const [activityFeed, setFeed]     = useState(() => loadLS(LS_FEED, []));
+  const [requests,  setRequests]  = useState(() => loadLS(LS_REQ, []));
+  const [donations, setDonations] = useState(() => loadLS(LS_DON, []));
+  const [activityFeed, setFeed]   = useState([]);
   const [contractLoading, setLoading] = useState(false);
   const [usingContract, setUsingContract] = useState(false);
 
-  // On mount: if contract is deployed, load from chain
+  // Persist every change immediately
+  useEffect(() => { saveLS(LS_REQ,  requests);  }, [requests]);
+  useEffect(() => { saveLS(LS_DON,  donations); }, [donations]);
+
+  // On mount: try to load from contract
   useEffect(() => {
     if (!isContractDeployed()) return;
     setLoading(true);
     contractGetAllRequests()
       .then(onChain => {
         if (onChain?.length > 0) {
-          setRequests(onChain);
-          saveLS(LS_REQUESTS, onChain);
+          // Merge: keep local requests not yet on-chain, add all on-chain
+          setRequests(prev => {
+            const onChainIds = new Set(onChain.map(r => String(r.id)));
+            const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
+            const merged = [...onChain, ...localOnly];
+            saveLS(LS_REQ, merged);
+            return merged;
+          });
+          setUsingContract(true);
         }
-        setUsingContract(true);
       })
-      .catch(e => console.error("Contract load failed, using localStorage:", e))
+      .catch(e => console.error("Contract load failed:", e))
       .finally(() => setLoading(false));
   }, []);
-
-  // Persist to localStorage on every change
-  useEffect(() => { saveLS(LS_REQUESTS,  requests);    }, [requests]);
-  useEffect(() => { saveLS(LS_DONATIONS, donations);   }, [donations]);
-  useEffect(() => { saveLS(LS_FEED,      activityFeed);}, [activityFeed]);
 
   const addActivity = useCallback((msg) => {
     setFeed(prev => [{ id: Date.now(), message: msg, time: new Date().toISOString() }, ...prev.slice(0, 29)]);
   }, []);
 
-  // Student posts a request — optimistic update + on-chain write
+  // Student posts a request
   const postRequest = useCallback(async (publicKey, data) => {
     const now = Date.now();
+    const goalXLM = parseFloat(data.goalXLM);
+    const durationDays = parseInt(data.durationDays) || 14;
+
+    // Build optimistic entry with all fields DonorPortal needs
     const optimistic = {
-      ...data,
       id: now,
-      raised: 0,
+      studentWallet: publicKey,
+      purpose: data.purpose,
+      field: data.field,
+      location: data.location,
+      description: data.description,
+      goalXLM: goalXLM,          // required by DonorPortal for remaining calc
+      raised: 0,                  // required by DonorPortal for remaining calc
       createdAt: new Date(now).toISOString(),
-      expiresAt: new Date(now + data.durationDays * 86400000).toISOString(),
+      expiresAt: new Date(now + durationDays * 86400000).toISOString(),
+      durationDays: durationDays,
       donorCount: 0,
       isActive: true,
-      studentWallet: publicKey,
     };
-    setRequests(prev => [optimistic, ...prev]);
-    addActivity(`New request: ${data.purpose}`);
 
+    // Save to state + localStorage immediately so it persists on role switch
+    setRequests(prev => {
+      const updated = [optimistic, ...prev];
+      saveLS(LS_REQ, updated);
+      return updated;
+    });
+
+    addActivity(`New request posted: ${data.purpose}`);
+
+    // Write to contract if deployed
     if (isContractDeployed()) {
       try {
-        await contractPostRequest(publicKey, data);
+        await contractPostRequest(publicKey, { ...data, goalXLM, durationDays });
         // Reload from chain to get real ledger timestamps
         const onChain = await contractGetAllRequests();
         if (onChain?.length > 0) {
           setRequests(onChain);
-          saveLS(LS_REQUESTS, onChain);
+          saveLS(LS_REQ, onChain);
         }
       } catch (e) {
-        console.error("On-chain post failed, keeping local copy:", e);
+        console.error("On-chain post failed, keeping local:", e);
+        // Local entry already saved — it persists
       }
     }
+
     return optimistic;
   }, [addActivity]);
 
-  // Donor records funding — optimistic update + on-chain write
+  // Donor records a funding
   const recordFunding = useCallback(async (publicKey, requestId, amountXLM, txHash) => {
-    setRequests(prev => prev.map(r =>
-      r.id === requestId ? { ...r, raised: r.raised + amountXLM, donorCount: r.donorCount + 1 } : r
-    ));
-    const entry = { id: Date.now(), requestId, amount: amountXLM, txHash, from: publicKey, time: new Date().toISOString() };
-    setDonations(prev => [entry, ...prev]);
+    setRequests(prev => {
+      const updated = prev.map(r =>
+        r.id === requestId
+          ? { ...r, raised: (r.raised || 0) + amountXLM, donorCount: (r.donorCount || 0) + 1 }
+          : r
+      );
+      saveLS(LS_REQ, updated);
+      return updated;
+    });
+
+    const entry = {
+      id: Date.now(),
+      requestId,
+      amount: amountXLM,
+      txHash,
+      from: publicKey,
+      time: new Date().toISOString(),
+    };
+
+    setDonations(prev => {
+      const updated = [entry, ...prev];
+      saveLS(LS_DON, updated);
+      return updated;
+    });
+
     addActivity(`${amountXLM} XLM funded — Tx: ${txHash?.slice(0, 8)}...`);
 
     if (isContractDeployed()) {
       try {
         await contractRecordDonation(publicKey, requestId, amountXLM);
         const onChain = await contractGetAllRequests();
-        if (onChain?.length > 0) { setRequests(onChain); saveLS(LS_REQUESTS, onChain); }
-      } catch (e) { console.error("On-chain record failed:", e); }
+        if (onChain?.length > 0) {
+          setRequests(onChain);
+          saveLS(LS_REQ, onChain);
+        }
+      } catch (e) {
+        console.error("On-chain record failed:", e);
+      }
     }
+
     return entry;
   }, [addActivity]);
 
@@ -119,18 +168,18 @@ export const AppProvider = ({ children }) => {
   const isExpired = useCallback((r) => new Date(r.expiresAt) < new Date(), []);
 
   const activeRequests  = requests.filter(r => r.isActive !== false && !isExpired(r));
-  const expiredRequests = requests.filter(r => r.isActive === false || isExpired(r));
+  const expiredRequests = requests.filter(r => r.isActive === false  ||  isExpired(r));
 
-  const getDonationsByWallet  = useCallback((w) => donations.filter(d => d.from === w), [donations]);
-  const getRequestsByWallet   = useCallback((w) => requests.filter(r => r.studentWallet === w), [requests]);
-  const getDonationsForRequest= useCallback((id) => donations.filter(d => d.requestId === id), [donations]);
+  const getDonationsByWallet   = useCallback((w) => donations.filter(d => d.from === w), [donations]);
+  const getRequestsByWallet    = useCallback((w) => requests.filter(r => r.studentWallet === w), [requests]);
+  const getDonationsForRequest = useCallback((id) => donations.filter(d => d.requestId === id), [donations]);
 
   const refreshFromContract = useCallback(async () => {
     if (!isContractDeployed()) return;
     setLoading(true);
     try {
       const onChain = await contractGetAllRequests();
-      if (onChain?.length > 0) { setRequests(onChain); saveLS(LS_REQUESTS, onChain); }
+      if (onChain?.length > 0) { setRequests(onChain); saveLS(LS_REQ, onChain); }
     } catch {}
     finally { setLoading(false); }
   }, []);
