@@ -44,7 +44,9 @@ function FundDialog({ request, onClose }) {
   const [state, setState] = useState("idle");
   const [txHash, setTxHash] = useState(null);
   const [error, setError] = useState("");
-  const remaining = request ? Math.max(0, request.goalXLM - request.raised) : 0;
+  const goalXLM = parseFloat(request?.goalXLM) || 0;
+  const raised   = parseFloat(request?.raised)   || 0;
+  const remaining = Math.max(0, goalXLM - raised);
   const quickAmounts = [10,25,50,100].filter(q=>q<=remaining);
 
   const fund = async () => {
@@ -136,8 +138,8 @@ function FundDialog({ request, onClose }) {
             {isProc&&<div style={{ display:"flex",alignItems:"center",gap:6,fontSize:12,fontFamily:"monospace",color:"var(--text-dim)",marginBottom:14 }}><Loader2 size={12} style={{ animation:"spin 1s linear infinite" }}/>{stepLabel}</div>}
             <div style={{ display:"flex",gap:10 }}>
               <button style={{ ...btnOutline,flex:1 }} onClick={close} disabled={isProc}>Cancel</button>
-              <button style={{ ...btnPrimary,flex:1,opacity:isProc||!amount||parseFloat(amount)<1||parseFloat(amount)>remaining?0.5:1 }}
-                onClick={fund} disabled={isProc||!amount||parseFloat(amount)<1||parseFloat(amount)>remaining}>
+              <button style={{ ...btnPrimary,flex:1,opacity:isProc||!amount||parseFloat(amount)<1||(remaining>0&&parseFloat(amount)>remaining)?0.5:1 }}
+                onClick={fund} disabled={isProc||!amount||parseFloat(amount)<1||(remaining>0&&parseFloat(amount)>remaining)}>
                 {isProc?stepLabel:`Send ${amount||"—"} XLM`}
               </button>
             </div>

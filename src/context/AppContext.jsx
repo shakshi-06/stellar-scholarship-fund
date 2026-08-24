@@ -33,15 +33,16 @@ export const AppProvider = ({ children }) => {
   useEffect(() => { saveLS(LS_REQ,  requests);  }, [requests]);
   useEffect(() => { saveLS(LS_DON,  donations); }, [donations]);
 
-  // On mount: try to load from contract
+  // On mount: try to load from contract — NEVER wipe local data
   useEffect(() => {
     if (!isContractDeployed()) return;
     setLoading(true);
     contractGetAllRequests()
       .then(onChain => {
-        if (onChain?.length > 0) {
-          // Merge: keep local requests not yet on-chain, add all on-chain
+        // Only merge if contract returned real data
+        if (Array.isArray(onChain) && onChain.length > 0) {
           setRequests(prev => {
+            // Keep all local requests not on chain, add on-chain ones
             const onChainIds = new Set(onChain.map(r => String(r.id)));
             const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
             const merged = [...onChain, ...localOnly];
@@ -50,8 +51,9 @@ export const AppProvider = ({ children }) => {
           });
           setUsingContract(true);
         }
+        // If contract empty or failed: keep local data untouched
       })
-      .catch(e => console.error("Contract load failed:", e))
+      .catch(e => console.error("Contract load failed, keeping local data:", e))
       .finally(() => setLoading(false));
   }, []);
 
@@ -97,9 +99,14 @@ export const AppProvider = ({ children }) => {
         await contractPostRequest(publicKey, { ...data, goalXLM, durationDays });
         // Reload from chain to get real ledger timestamps
         const onChain = await contractGetAllRequests();
-        if (onChain?.length > 0) {
-          setRequests(onChain);
-          saveLS(LS_REQ, onChain);
+        if (Array.isArray(onChain) && onChain.length > 0) {
+          setRequests(prev => {
+            const onChainIds = new Set(onChain.map(r => String(r.id)));
+            const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
+            const merged = [...onChain, ...localOnly];
+            saveLS(LS_REQ, merged);
+            return merged;
+          });
         }
       } catch (e) {
         console.error("On-chain post failed, keeping local:", e);
@@ -143,9 +150,14 @@ export const AppProvider = ({ children }) => {
       try {
         await contractRecordDonation(publicKey, requestId, amountXLM);
         const onChain = await contractGetAllRequests();
-        if (onChain?.length > 0) {
-          setRequests(onChain);
-          saveLS(LS_REQ, onChain);
+        if (Array.isArray(onChain) && onChain.length > 0) {
+          setRequests(prev => {
+            const onChainIds = new Set(onChain.map(r => String(r.id)));
+            const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
+            const merged = [...onChain, ...localOnly];
+            saveLS(LS_REQ, merged);
+            return merged;
+          });
         }
       } catch (e) {
         console.error("On-chain record failed:", e);
