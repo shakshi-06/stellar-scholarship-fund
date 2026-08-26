@@ -9,8 +9,33 @@ import {
 
 export const SC_MEMO = "SC-FUND";
 
-const LS_REQ  = "scfund_v2_requests";
-const LS_DON  = "scfund_v2_donations";
+const LS_REQ  = "scfund_v3_requests";
+const LS_DON  = "scfund_v3_donations";
+
+// Clear old broken keys from previous versions
+try {
+  localStorage.removeItem("scfund_requests");
+  localStorage.removeItem("scfund_donations");
+  localStorage.removeItem("scfund_v2_requests");
+  localStorage.removeItem("scfund_v2_donations");
+  localStorage.removeItem("scfund_feed");
+} catch {}
+
+// Deduplicate requests — keeps the one with highest raised value
+function dedupeRequests(reqs) {
+  const seen = new Map();
+  for (const r of reqs) {
+    const key = r.studentWallet + "||" + r.purpose;
+    const existing = seen.get(key);
+    // Keep whichever has a valid goalXLM and higher raised
+    if (!existing || 
+        (!existing.goalXLM && r.goalXLM) ||
+        (r.raised || 0) > (existing.raised || 0)) {
+      seen.set(key, r);
+    }
+  }
+  return Array.from(seen.values());
+}
 
 const loadLS = (key, fb) => {
   try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fb; }
@@ -23,7 +48,7 @@ const saveLS = (key, val) => {
 const AppContext = createContext(null);
 
 export const AppProvider = ({ children }) => {
-  const [requests,  setRequests]  = useState(() => loadLS(LS_REQ, []));
+  const [requests,  setRequests]  = useState(() => dedupeRequests(loadLS(LS_REQ, [])));
   const [donations, setDonations] = useState(() => loadLS(LS_DON, []));
   const [activityFeed, setFeed]   = useState([]);
   const [contractLoading, setLoading] = useState(false);
@@ -45,7 +70,7 @@ export const AppProvider = ({ children }) => {
             // Keep all local requests not on chain, add on-chain ones
             const onChainIds = new Set(onChain.map(r => String(r.id)));
             const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
-            const merged = [...onChain, ...localOnly];
+            const merged = dedupeRequests([...onChain, ...localOnly]);
             saveLS(LS_REQ, merged);
             return merged;
           });
@@ -103,7 +128,7 @@ export const AppProvider = ({ children }) => {
           setRequests(prev => {
             const onChainIds = new Set(onChain.map(r => String(r.id)));
             const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
-            const merged = [...onChain, ...localOnly];
+            const merged = dedupeRequests([...onChain, ...localOnly]);
             saveLS(LS_REQ, merged);
             return merged;
           });
@@ -154,7 +179,7 @@ export const AppProvider = ({ children }) => {
           setRequests(prev => {
             const onChainIds = new Set(onChain.map(r => String(r.id)));
             const localOnly = prev.filter(r => !onChainIds.has(String(r.id)));
-            const merged = [...onChain, ...localOnly];
+            const merged = dedupeRequests([...onChain, ...localOnly]);
             saveLS(LS_REQ, merged);
             return merged;
           });
