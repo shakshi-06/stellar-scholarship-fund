@@ -204,8 +204,14 @@ export const AppProvider = ({ children }) => {
 
   const isExpired = useCallback((r) => new Date(r.expiresAt) < new Date(), []);
 
-  const activeRequests  = requests.filter(r => r.isActive !== false && !isExpired(r));
-  const expiredRequests = requests.filter(r => r.isActive === false  ||  isExpired(r));
+  // Filter out invalid requests (broken entries with missing goalXLM from old contract calls)
+  const validRequests = requests.filter(r =>
+    r.goalXLM && parseFloat(r.goalXLM) > 0 &&
+    r.purpose && r.purpose.length > 0 &&
+    r.studentWallet && r.studentWallet.length > 0
+  );
+  const activeRequests  = validRequests.filter(r => r.isActive !== false && !isExpired(r));
+  const expiredRequests = validRequests.filter(r => r.isActive === false || isExpired(r));
 
   const getDonationsByWallet   = useCallback((w) => donations.filter(d => d.from === w), [donations]);
   const getRequestsByWallet    = useCallback((w) => requests.filter(r => r.studentWallet === w), [requests]);
