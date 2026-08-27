@@ -6,6 +6,7 @@ import { sendXLMTransaction, submitSignedTransaction, getExplorerUrl, formatXLM,
 import { signWithFreighter } from "../utils/freighter";
 import { SC_MEMO } from "../context/AppContext";
 import { CheckCircle2, Clock, ExternalLink, Loader2, Search, ArrowUpRight } from "lucide-react";
+import RequestDetail from "./RequestDetail";
 import { toast } from "../components/Toast";
 
 const card     = { background:"var(--card-bg)",border:"1px solid var(--card-border)",borderRadius:12,padding:20 };
@@ -197,6 +198,7 @@ export default function DonorPortal() {
   const [fieldFilter, setFieldFilter] = useState("All");
   const [sort, setSort] = useState("newest");
   const [fundReq, setFundReq] = useState(null);
+  const [detailReq, setDetailReq] = useState(null);
   const [verified, setVerified] = useState({});
 
   const myDonations = getDonationsByWallet(publicKey);
@@ -279,12 +281,25 @@ export default function DonorPortal() {
           </div>
 
           {filtered.length===0?(
-            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12,fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
-              {activeRequests.length===0?"No funding requests yet.":"No requests match your filters."}
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12 }}>
+              {activeRequests.length===0?(
+                <div>
+                  <div style={{ fontSize:28,marginBottom:12 }}>🎓</div>
+                  <div style={{ fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:8 }}>No funding requests yet</div>
+                  <div style={{ fontSize:13,color:"var(--text-dim)",maxWidth:320,margin:"0 auto",lineHeight:1.6 }}>
+                    Share this platform with students who need funding. They can connect their wallet and post a request in minutes.
+                  </div>
+                </div>
+              ):(
+                <div>
+                  <div style={{ fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:6 }}>No requests match your filters</div>
+                  <div style={{ fontSize:13,color:"var(--text-dim)" }}>Try clearing the search or selecting a different field.</div>
+                </div>
+              )}
             </div>
           ):(
             <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16 }}>
-              {filtered.map(r=><RequestCard key={r.id} req={r} onFund={setFundReq} isVerified={verified[r.studentWallet]} />)}
+              {filtered.map(r=><RequestCard key={r.id} req={r} onFund={()=>setDetailReq(r)} isVerified={verified[r.studentWallet]} />)}
             </div>
           )}
         </>
@@ -319,6 +334,15 @@ export default function DonorPortal() {
         </div>
       )}
 
+      {detailReq && (
+        <div style={{ position:"fixed",inset:0,zIndex:40,background:"var(--bg)",overflowY:"auto" }}>
+          <RequestDetail
+            request={detailReq}
+            onBack={()=>setDetailReq(null)}
+            onFund={(req)=>{ setDetailReq(null); setFundReq(req); }}
+          />
+        </div>
+      )}
       {fundReq&&<FundDialog request={fundReq} onClose={()=>setFundReq(null)} />}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>
