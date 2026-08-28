@@ -9,11 +9,11 @@ import { CheckCircle2, Clock, ExternalLink, Loader2, Search, ArrowUpRight } from
 import RequestDetail from "./RequestDetail";
 import { toast } from "../components/Toast";
 
-const card     = { background:"var(--card-bg)",border:"1px solid var(--card-border)",borderRadius:12,padding:20 };
-const label    = { fontSize:10,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:4,display:"block" };
+const card     = { background:"var(--card-bg)",border:"1px solid var(--card-border)",borderRadius:14,padding:22,boxShadow:"var(--shadow)" };
+const label    = { fontSize:10,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:5,display:"block" };
 const mono     = { fontFamily:"monospace",fontSize:12,color:"var(--text-muted)",wordBreak:"break-all" };
 const input    = { width:"100%",height:36,border:"1px solid var(--border-2)",background:"var(--input-bg)",borderRadius:8,padding:"0 12px",fontSize:13,fontFamily:"monospace",color:"var(--text)",outline:"none",boxSizing:"border-box" };
-const btnPrimary  = { display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,height:36,padding:"0 16px",fontSize:13,fontWeight:600,background:"var(--text)",color:"var(--bg)",border:"none",borderRadius:8,cursor:"pointer" };
+const btnPrimary  = { display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,height:38,padding:"0 18px",fontSize:13,fontWeight:600,background:"var(--text)",color:"var(--bg)",border:"none",borderRadius:10,cursor:"pointer",letterSpacing:"-0.01em" };
 const btnOutline  = { ...btnPrimary,background:"transparent",color:"var(--text)",border:"1px solid var(--border-2)" };
 const tag      = { fontSize:10,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.1em" };
 
