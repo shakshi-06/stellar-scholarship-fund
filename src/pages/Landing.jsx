@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useWallet } from "../context/WalletContext";
 import { useTheme } from "../context/ThemeContext";
 import ActivityStrip from "../components/ActivityStrip";
+import { useApp } from "../context/AppContext";
 import { Loader2, ArrowRight, BookOpen, Wallet, Sun, Moon } from "lucide-react";
 
 const S = {
@@ -107,6 +108,8 @@ function Modal({ role, onClose }) {
 export default function Landing() {
   const [role, setRole] = useState(null);
   const { theme, toggle } = useTheme();
+  const { activeRequests, donations } = useApp();
+  const totalFunded = donations.reduce((s, d) => s + (d.amount || 0), 0);
 
   return (
     <div style={S.page}>
@@ -154,9 +157,9 @@ export default function Landing() {
       <div style={S.statsBar}>
         <div style={S.statsInner}>
           {[
-            { l:"Network", v:"Stellar Testnet" },
-            { l:"Finality", v:"~5 seconds" },
-            { l:"Transaction fee", v:"< $0.001" },
+            { l:"Active Requests", v: activeRequests.length || "0" },
+            { l:"Total XLM Funded", v: totalFunded > 0 ? `${totalFunded.toFixed(0)} XLM` : "0 XLM" },
+            { l:"Transaction Fee", v:"< $0.001" },
           ].map((s, i) => (
             <div key={s.l} style={{ ...S.statItem, borderRight: i < 2 ? "1px solid var(--border)" : "none", paddingLeft: i === 0 ? 0 : 24 }}>
               <div style={S.statLabel}>{s.l}</div>
