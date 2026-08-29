@@ -133,13 +133,22 @@ export default function RequestDetail({ request, onBack, onFund }) {
       )}
 
       {/* Fund button */}
-      {!isOwnRequest && (
+      {!isOwnRequest && !expired && !full && (
         <button
-          onClick={() => !expired && !full && onFund(request)}
-          disabled={expired || full}
-          style={{ width: "100%", height: 44, fontSize: 14, fontWeight: 600, background: expired || full ? "var(--surface-2)" : "var(--text)", color: expired || full ? "var(--text-dim)" : "var(--bg)", border: expired || full ? "1px solid var(--border-2)" : "none", borderRadius: 10, cursor: expired || full ? "not-allowed" : "pointer", opacity: expired || full ? 0.5 : 1 }}>
-          {full ? "Fully Funded" : expired ? "Expired" : `Fund this student — ${remaining.toFixed(2)} XLM needed`}
+          onClick={() => onFund(request)}
+          style={{ width: "100%", height: 44, fontSize: 14, fontWeight: 600, background: "var(--text)", color: "var(--bg)", border: "none", borderRadius: 10, cursor: "pointer" }}>
+          Fund this student — {remaining.toFixed(2)} XLM needed
         </button>
+      )}
+      {!isOwnRequest && full && (
+        <div style={{ textAlign:"center", padding:"12px", background:"rgba(74,222,128,0.08)", border:"1px solid rgba(74,222,128,0.2)", borderRadius:10, fontSize:13, color:"var(--green)", fontWeight:600 }}>
+          This request has been fully funded
+        </div>
+      )}
+      {!isOwnRequest && expired && !full && (
+        <div style={{ textAlign:"center", padding:"12px", background:"rgba(248,113,113,0.08)", border:"1px solid rgba(248,113,113,0.2)", borderRadius:10, fontSize:13, color:"var(--red)" }}>
+          This request expired before reaching its goal
+        </div>
       )}
 
       {isOwnRequest && (

@@ -192,7 +192,9 @@ function RequestCard({ req, onFund, isVerified }) {
 
 export default function DonorPortal() {
   const { publicKey, balance } = useWallet();
-  const { activeRequests, getDonationsByWallet, checkPreviouslyFunded } = useApp();
+  const { activeRequests, expiredRequests, requests, getDonationsByWallet, checkPreviouslyFunded } = useApp();
+  const fundedRequests = requests.filter(r => r.isActive === false && parseFloat(r.goalXLM) > 0 && r.purpose);
+  const trueExpiredRequests = expiredRequests.filter(r => r.isActive !== false && parseFloat(r.goalXLM) > 0 && r.purpose);
   const [tab, setTab] = useState("browse");
   const [search, setSearch] = useState("");
   const [fieldFilter, setFieldFilter] = useState("All");
@@ -205,7 +207,8 @@ export default function DonorPortal() {
   const totalDonated = myDonations.reduce((s,d)=>s+d.amount,0);
 
   useEffect(()=>{
-    const wallets = [...new Set(activeRequests.map(r=>r.studentWallet))];
+    const allVisible = [...activeRequests, ...fundedRequests, ...trueExpiredRequests];
+    const wallets = [...new Set(allVisible.map(r=>r.studentWallet))];
     wallets.forEach(async w=>{
       if (verified[w]!==undefined) return;
       const r = await checkPreviouslyFunded(w);
@@ -227,8 +230,10 @@ export default function DonorPortal() {
   });
 
   const tabs = [
-    { id:"browse", label:`Browse (${activeRequests.length})` },
-    { id:"history", label:`My Donations${myDonations.length>0?` (${myDonations.length})`:""}` },
+    { id:"browse",   label:`Active (${activeRequests.length})` },
+    { id:"funded",   label:`Funded (${fundedRequests.length})` },
+    { id:"expired",  label:`Expired (${trueExpiredRequests.length})` },
+    { id:"history",  label:`My Donations${myDonations.length>0?` (${myDonations.length})`:""}` },
   ];
 
   return (
@@ -246,6 +251,8 @@ export default function DonorPortal() {
         {totalDonated>0&&<><div style={{ width:1,background:"var(--border)" }}/><div><span style={label}>Total Donated</span><div style={{ fontSize:14,fontWeight:600,fontFamily:"monospace",color:"var(--yellow)" }}>{totalDonated.toFixed(2)} XLM</div></div></>}
         <div style={{ width:1,background:"var(--border)" }}/>
         <div><span style={label}>Active Requests</span><div style={{ fontSize:14,fontWeight:600,fontFamily:"monospace",color:"var(--text)" }}>{activeRequests.length}</div></div>
+        <div style={{ width:1,background:"var(--border)" }}/>
+        <div><span style={label}>Total Pools</span><div style={{ fontSize:14,fontWeight:600,fontFamily:"monospace",color:"var(--text)" }}>{requests.filter(r=>parseFloat(r.goalXLM)>0&&r.purpose).length}</div></div>
       </div>
 
       {/* Tabs */}
@@ -284,8 +291,7 @@ export default function DonorPortal() {
             <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12 }}>
               {activeRequests.length===0?(
                 <div>
-                  <div style={{ fontSize:28,marginBottom:12 }}>🎓</div>
-                  <div style={{ fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:8 }}>No funding requests yet</div>
+                  <div style={{ fontSize:14,fontWeight:600,color:"var(--text)",marginBottom:8 }}>No active funding requests</div>
                   <div style={{ fontSize:13,color:"var(--text-dim)",maxWidth:320,margin:"0 auto",lineHeight:1.6 }}>
                     Share this platform with students who need funding. They can connect their wallet and post a request in minutes.
                   </div>
@@ -343,6 +349,36 @@ export default function DonorPortal() {
           />
         </div>
       )}
+      {/* Funded tab */}
+      {tab==="funded"&&(
+        <div>
+          {fundedRequests.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12,fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
+              No fully funded pools yet.
+            </div>
+          ):(
+            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16 }}>
+              {fundedRequests.map(r=><RequestCard key={r.id} req={r} onFund={()=>setDetailReq(r)} isVerified={verified[r.studentWallet]} />)}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Expired tab */}
+      {tab==="expired"&&(
+        <div>
+          {trueExpiredRequests.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12,fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
+              No expired pools yet.
+            </div>
+          ):(
+            <div style={{ display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:16 }}>
+              {trueExpiredRequests.map(r=><RequestCard key={r.id} req={r} onFund={()=>setDetailReq(r)} isVerified={verified[r.studentWallet]} />)}
+            </div>
+          )}
+        </div>
+      )}
+
       {fundReq&&<FundDialog request={fundReq} onClose={()=>setFundReq(null)} />}
       <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
     </div>

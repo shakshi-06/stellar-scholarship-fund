@@ -188,11 +188,14 @@ export default function StudentPortal() {
   const { payments, loading:pmtLoading } = useReceivedPayments(publicKey);
   const myReqs = getRequestsByWallet(publicKey);
   const totalRec = payments.reduce((s,p)=>s+parseFloat(p.amount),0);
-  const active = myReqs.filter(r=>new Date(r.expiresAt)>=new Date());
-  const expired = myReqs.filter(r=>new Date(r.expiresAt)<new Date());
+  const active  = myReqs.filter(r => r.isActive !== false && new Date(r.expiresAt) >= new Date() && parseFloat(r.raised||0) < parseFloat(r.goalXLM||0));
+  const funded  = myReqs.filter(r => r.isActive === false || parseFloat(r.raised||0) >= parseFloat(r.goalXLM||0));
+  const expired = myReqs.filter(r => r.isActive !== false && new Date(r.expiresAt) < new Date() && parseFloat(r.raised||0) < parseFloat(r.goalXLM||0));
 
   const tabs = [
-    { id:"requests", label:`My Requests (${myReqs.length})` },
+    { id:"requests", label:`Active (${active.length})` },
+    { id:"funded",   label:`Funded (${funded.length})` },
+    { id:"expired",  label:`Expired (${expired.length})` },
     { id:"received", label:`Received${payments.length>0?` (${payments.length})`:""}` },
   ];
 
@@ -230,23 +233,37 @@ export default function StudentPortal() {
       {/* My Requests */}
       {tab==="requests"&&(
         <div>
-          {myReqs.length===0?(
+          {active.length===0?(
             <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12 }}>
-              <div style={{ fontSize:13,fontFamily:"monospace",color:"var(--text-dim)",marginBottom:16 }}>No requests posted yet</div>
-              <button style={{ ...btnPrimary,fontSize:12,gap:6 }} onClick={()=>setShowPost(true)}><Plus size={14}/>Post your first request</button>
+              <div style={{ fontSize:13,fontFamily:"monospace",color:"var(--text-dim)",marginBottom:16 }}>No active requests</div>
+              <button style={{ ...btnPrimary,fontSize:12,gap:6 }} onClick={()=>setShowPost(true)}><Plus size={14}/>Post a new request</button>
             </div>
           ):(
-            <>
-              {active.map(r=><RequestCard key={r.id} req={r}/>)}
-              {expired.length>0&&(
-                <div style={{ marginTop:24 }}>
-                  <div style={{ display:"flex",alignItems:"center",gap:6,fontSize:11,fontFamily:"monospace",color:"var(--text-dim)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:12 }}>
-                    <AlertCircle size={12}/>Expired requests
-                  </div>
-                  {expired.map(r=><RequestCard key={r.id} req={r}/>)}
-                </div>
-              )}
-            </>
+            active.map(r=><RequestCard key={r.id} req={r}/>)
+          )}
+        </div>
+      )}
+
+      {tab==="funded"&&(
+        <div>
+          {funded.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12,fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
+              None of your requests have been fully funded yet.
+            </div>
+          ):(
+            funded.map(r=><RequestCard key={r.id} req={r}/>)
+          )}
+        </div>
+      )}
+
+      {tab==="expired"&&(
+        <div>
+          {expired.length===0?(
+            <div style={{ textAlign:"center",padding:"64px 24px",border:"1px dashed var(--border)",borderRadius:12,fontSize:13,fontFamily:"monospace",color:"var(--text-dim)" }}>
+              No expired requests.
+            </div>
+          ):(
+            expired.map(r=><RequestCard key={r.id} req={r}/>)
           )}
         </div>
       )}
