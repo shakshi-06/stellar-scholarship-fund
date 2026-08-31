@@ -7,3 +7,6 @@ dist/
 coverage/
 
 .vercel
+
+# Rust build outputs
+**/target/
